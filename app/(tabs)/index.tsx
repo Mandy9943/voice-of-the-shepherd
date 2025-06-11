@@ -1,8 +1,18 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import { colors } from "@/constants/colors";
 import { typography } from "@/constants/typography";
+import { getImageAsset } from "@/lib/imageAssets";
 import { useSettingsStore } from "@/store/settingsStore";
+import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
+import { Play } from "lucide-react-native";
 import React from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -11,6 +21,16 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
 
   const theme = isDarkMode ? colors.dark : colors.light;
+  const handleQuotePress = (id: string) => {
+    // addToHistory(id);
+    // router.push(`/quote/${id}`);
+  };
+
+  const handlePlayDaily = () => {
+    // Play the daily quote
+    // playQuote(dailyQuote, quotes);
+    // router.push(`/quote/${dailyQuote.id}`);
+  };
 
   return (
     <>
@@ -32,6 +52,38 @@ export default function HomeScreen() {
             </Text>
           </View>
         </View>
+
+        <TouchableOpacity
+          style={styles.dailyContainer}
+          onPress={() => handleQuotePress("dailyQuote.id")}
+          activeOpacity={0.9}
+        >
+          <Image
+            source={getImageAsset("dailyQuote.id")}
+            style={styles.dailyImage}
+            contentFit="cover"
+          />
+          <LinearGradient
+            colors={["transparent", "rgba(0,0,0,0.7)"]}
+            style={styles.gradient}
+          />
+          <View style={styles.dailyContent}>
+            <View style={styles.dailyHeader}>
+              <View style={styles.dailyBadge}>
+                <Text style={styles.dailyBadgeText}>Daily Quote</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.dailyPlayButton}
+                onPress={handlePlayDaily}
+                activeOpacity={0.8}
+              >
+                <Play size={16} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+            {/* <Text style={styles.dailyQuote}>{dailyQuote.text}</Text>
+            <Text style={styles.dailyReference}>{dailyQuote.reference}</Text> */}
+          </View>
+        </TouchableOpacity>
       </ScrollView>
     </>
   );
