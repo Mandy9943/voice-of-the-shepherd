@@ -8,32 +8,62 @@ import {
 
 import { colors } from "@/constants/colors";
 import { typography } from "@/constants/typography";
-import { getProcessedCommands, getRandomCommand } from "@/lib/commandsData";
+import {
+  getProcessedCommands,
+  getRandomCommand,
+  JesusCommand,
+} from "@/lib/commandsData";
 import { getImageAsset } from "@/lib/imageAssets";
+
+import { usePlayerStore } from "@/store/playerStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 import { Play } from "lucide-react-native";
-import React from "react";
+import React, { useEffect } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
+  const router = useRouter();
   const { isDarkMode } = useSettingsStore();
+  const { history, addToHistory, playQuote, resetDailyProgressIfNeeded } =
+    usePlayerStore();
   const insets = useSafeAreaInsets();
-  const quotes = getProcessedCommands();
-
-  const dailyQuote = getRandomCommand();
 
   const theme = isDarkMode ? colors.dark : colors.light;
+
+  // Get processed commands with local assets
+  const quotes = getProcessedCommands();
+
+  // Reset daily progress if needed when component mounts
+  useEffect(() => {
+    resetDailyProgressIfNeeded();
+  }, []);
+
+  // Get a random quote for the daily feature
+  const dailyQuote = getRandomCommand();
+
+  // Get recent quotes from history
+  const recentQuotes = history
+    .slice(0, 5)
+    .map((id) => quotes.find((q: JesusCommand) => q.id === id))
+    .filter(Boolean);
+
   const handleQuotePress = (id: string) => {
-    // addToHistory(id);
+    addToHistory(id);
     router.push(`/quote/${id}`);
+  };
+
+  const handlePlayAll = () => {
+    // Start playing from the first quote with all quotes as playlist
+    playQuote(quotes[0], quotes);
+    router.push(`/quote/${quotes[0].id}`);
   };
 
   const handlePlayDaily = () => {
     // Play the daily quote
-    // playQuote(dailyQuote, quotes);
+    playQuote(dailyQuote, quotes);
     router.push(`/quote/${dailyQuote.id}`);
   };
 

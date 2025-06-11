@@ -1,3 +1,4 @@
+import { AudioProvider } from "@/components/AudioProvider";
 import { colors } from "@/constants/colors";
 import { useSettingsStore } from "@/store/settingsStore";
 import { Stack } from "expo-router";
@@ -6,7 +7,11 @@ import React from "react";
 import "react-native-gesture-handler";
 
 export default function RootLayout() {
-  return <RootLayoutNav />;
+  return (
+    <AudioProvider>
+      <RootLayoutNav />
+    </AudioProvider>
+  );
 }
 
 function RootLayoutNav() {
