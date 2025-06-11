@@ -1,29 +1,51 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { colors } from "@/constants/colors";
+import { useSettingsStore } from "@/store/settingsStore";
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import React from "react";
+import "react-native-gesture-handler";
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+  return <RootLayoutNav />;
+}
 
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
-  }
+function RootLayoutNav() {
+  const { isDarkMode } = useSettingsStore();
+  const theme = isDarkMode ? colors.dark : colors.light;
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
+    <>
+      <StatusBar style={isDarkMode ? "light" : "dark"} />
+      <Stack
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: theme.background,
+          },
+          headerTintColor: theme.text,
+          headerBackTitle: "Back",
+          contentStyle: {
+            backgroundColor: theme.background,
+          },
+        }}
+      >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
+        {/* <Stack.Screen
+          name="quote/[id]"
+          options={{
+            title: "Quote",
+            headerTransparent: true,
+            headerTintColor: "#FFFFFF",
+            headerBackTitle: "Back",
+          }}
+        /> */}
+        {/* <Stack.Screen
+          name="category/[id]"
+          options={{
+            title: "Category",
+            headerBackTitle: "Categories",
+          }}
+        /> */}
       </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    </>
   );
 }

@@ -1,75 +1,181 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { colors } from "@/constants/colors";
+import { typography } from "@/constants/typography";
+import { useSettingsStore } from "@/store/settingsStore";
+import React from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
+  const { isDarkMode } = useSettingsStore();
+  const insets = useSafeAreaInsets();
+
+  const theme = isDarkMode ? colors.dark : colors.light;
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <>
+      <ScrollView
+        style={[
+          styles.container,
+          { backgroundColor: theme.background, paddingTop: insets.top },
+        ]}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <View style={styles.header}>
+          <View style={styles.titleContainer}>
+            <Text style={[styles.title, { color: theme.text }]}>
+              Voice of the Shepherd
+            </Text>
+            <Text style={[styles.subtitle, { color: theme.secondary }]}>
+              Today&apos;s Word
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 180, // Extra space for bigger mini player and tab bar
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
   titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    flex: 1,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  title: {
+    fontSize: typography.sizes.xxl,
+    fontFamily: typography.quoteFont,
+    marginBottom: 4,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
+  subtitle: {
+    fontSize: typography.sizes.md,
+    marginBottom: 16,
+  },
+  dailyContainer: {
+    height: 240,
+    marginHorizontal: 16,
+    borderRadius: 16,
+    overflow: "hidden",
+    marginBottom: 16,
+  },
+  dailyImage: {
+    width: "100%",
+    height: "100%",
+    position: "absolute",
+  },
+  gradient: {
+    position: "absolute",
     left: 0,
-    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    height: "70%",
+  },
+  dailyContent: {
+    flex: 1,
+    justifyContent: "flex-end",
+    padding: 16,
+  },
+  dailyHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  dailyBadge: {
+    backgroundColor: "rgba(212, 175, 55, 0.8)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  dailyBadgeText: {
+    color: "#FFFFFF",
+    fontSize: typography.sizes.xs,
+    fontWeight: "600",
+  },
+  dailyPlayButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dailyQuote: {
+    color: "#FFFFFF",
+    fontSize: typography.sizes.lg,
+    fontFamily: typography.quoteFont,
+    marginBottom: 8,
+    lineHeight: typography.sizes.lg * 1.4,
+  },
+  dailyReference: {
+    color: "rgba(255,255,255,0.8)",
+    fontSize: typography.sizes.sm,
+    fontStyle: "italic",
+  },
+  playAllCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 16,
+    marginBottom: 24,
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  playAllIconLeft: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 16,
+  },
+  playAllContent: {
+    flex: 1,
+  },
+  playAllTitle: {
+    fontSize: typography.sizes.lg,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  playAllSubtitle: {
+    fontSize: typography.sizes.sm,
+  },
+  playAllIconRight: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 12,
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: typography.sizes.lg,
+    fontWeight: "600",
+    marginHorizontal: 16,
+    marginBottom: 12,
+  },
+  footer: {
+    height: 20,
   },
 });
