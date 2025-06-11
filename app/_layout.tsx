@@ -29,7 +29,7 @@ function RootLayoutNav() {
         }}
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        {/* <Stack.Screen
+        <Stack.Screen
           name="quote/[id]"
           options={{
             title: "Quote",
@@ -37,7 +37,7 @@ function RootLayoutNav() {
             headerTintColor: "#FFFFFF",
             headerBackTitle: "Back",
           }}
-        /> */}
+        />
         {/* <Stack.Screen
           name="category/[id]"
           options={{

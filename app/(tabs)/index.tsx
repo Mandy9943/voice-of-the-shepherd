@@ -8,10 +8,12 @@ import {
 
 import { colors } from "@/constants/colors";
 import { typography } from "@/constants/typography";
+import { getProcessedCommands, getRandomCommand } from "@/lib/commandsData";
 import { getImageAsset } from "@/lib/imageAssets";
 import { useSettingsStore } from "@/store/settingsStore";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 import { Play } from "lucide-react-native";
 import React from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -19,17 +21,20 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function HomeScreen() {
   const { isDarkMode } = useSettingsStore();
   const insets = useSafeAreaInsets();
+  const quotes = getProcessedCommands();
+
+  const dailyQuote = getRandomCommand();
 
   const theme = isDarkMode ? colors.dark : colors.light;
   const handleQuotePress = (id: string) => {
     // addToHistory(id);
-    // router.push(`/quote/${id}`);
+    router.push(`/quote/${id}`);
   };
 
   const handlePlayDaily = () => {
     // Play the daily quote
     // playQuote(dailyQuote, quotes);
-    // router.push(`/quote/${dailyQuote.id}`);
+    router.push(`/quote/${dailyQuote.id}`);
   };
 
   return (
@@ -55,11 +60,11 @@ export default function HomeScreen() {
 
         <TouchableOpacity
           style={styles.dailyContainer}
-          onPress={() => handleQuotePress("dailyQuote.id")}
+          onPress={() => handleQuotePress(dailyQuote.id)}
           activeOpacity={0.9}
         >
           <Image
-            source={getImageAsset("dailyQuote.id")}
+            source={getImageAsset(dailyQuote.id)}
             style={styles.dailyImage}
             contentFit="cover"
           />
