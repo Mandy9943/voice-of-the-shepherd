@@ -15,12 +15,15 @@ import {
 } from "@/lib/commandsData";
 import { getImageAsset } from "@/lib/imageAssets";
 
+import { CongratulationsModal } from "@/components/CongratulationsModal";
+import { QuoteCard } from "@/components/QuoteCard";
+import { StreakProgress } from "@/components/StreakProgress";
 import { usePlayerStore } from "@/store/playerStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { Play } from "lucide-react-native";
+import { Play, Shuffle } from "lucide-react-native";
 import React, { useEffect } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -115,11 +118,75 @@ export default function HomeScreen() {
                 <Play size={16} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
-            {/* <Text style={styles.dailyQuote}>{dailyQuote.text}</Text>
-            <Text style={styles.dailyReference}>{dailyQuote.reference}</Text> */}
+            <Text style={styles.dailyQuote}>{dailyQuote.text}</Text>
+            <Text style={styles.dailyReference}>{dailyQuote.reference}</Text>
           </View>
         </TouchableOpacity>
+
+        {/* Play All Teachings Button */}
+        <TouchableOpacity
+          style={[
+            styles.playAllCard,
+            { backgroundColor: theme.card, borderColor: theme.border },
+          ]}
+          onPress={handlePlayAll}
+          activeOpacity={0.2}
+        >
+          <View
+            style={[styles.playAllIconLeft, { backgroundColor: "#2E5BBA" }]}
+          >
+            <Shuffle size={24} color="#FFFFFF" />
+          </View>
+          <View style={styles.playAllContent}>
+            <Text style={[styles.playAllTitle, { color: theme.text }]}>
+              Play All Teachings
+            </Text>
+            <Text style={[styles.playAllSubtitle, { color: theme.secondary }]}>
+              Listen to all {quotes.length} teachings in sequence
+            </Text>
+          </View>
+          <View
+            style={[styles.playAllIconRight, { backgroundColor: "#2E5BBA" }]}
+          >
+            <Play size={20} color="#FFFFFF" />
+          </View>
+        </TouchableOpacity>
+
+        {/* Streak Progress */}
+        <StreakProgress />
+
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>
+            Featured Teachings
+          </Text>
+          {quotes.slice(0, 3).map((quote: JesusCommand) => (
+            <QuoteCard
+              key={quote.id}
+              quote={quote}
+              onPress={() => handleQuotePress(quote.id)}
+            />
+          ))}
+        </View>
+        {recentQuotes.length > 0 && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              Recently Viewed
+            </Text>
+            {recentQuotes.map((quote) => (
+              <QuoteCard
+                key={quote?.id}
+                quote={quote!}
+                compact
+                onPress={() => handleQuotePress(quote!.id)}
+              />
+            ))}
+          </View>
+        )}
+
+        <View style={styles.footer} />
       </ScrollView>
+
+      <CongratulationsModal />
     </>
   );
 }

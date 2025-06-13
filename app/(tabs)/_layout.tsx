@@ -1,7 +1,7 @@
 import { colors } from "@/constants/colors";
 import { useSettingsStore } from "@/store/settingsStore";
 import { Tabs } from "expo-router";
-import { Home } from "lucide-react-native";
+import { BookmarkIcon, Home, Search, Settings } from "lucide-react-native";
 import React from "react";
 import { Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -74,7 +74,7 @@ export default function TabLayout() {
             ),
           }}
         />
-        {/* <Tabs.Screen
+        <Tabs.Screen
           name="categories"
           options={{
             title: "Categories",
@@ -115,7 +115,7 @@ export default function TabLayout() {
               />
             ),
           }}
-        /> */}
+        />
       </Tabs>
       {/* <MiniPlayer /> */}
     </View>
