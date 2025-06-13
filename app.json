@@ -12,7 +12,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.cesar9943.mobileapp2",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "UIBackgroundModes": ["audio"],
+        "NSMicrophoneUsageDescription": "This app does not use the microphone. This permission is required by expo-audio for audio playback functionality."
       }
     },
     "android": {
