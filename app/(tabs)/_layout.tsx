@@ -2,7 +2,7 @@ import RescueMode from "@/components/RescueMode";
 import { colors } from "@/constants/colors";
 import { useSettingsStore } from "@/store/settingsStore";
 import { Tabs } from "expo-router";
-import { Grid3X3, Heart, Home, Settings } from "lucide-react-native";
+import { BookmarkIcon, Home, Search, Settings } from "lucide-react-native";
 import React, { useState } from "react";
 import { StyleSheet } from "react-native";
 
@@ -37,15 +37,27 @@ export default function TabLayout() {
           name="index"
           options={{
             title: "Home",
-            tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
+            headerShown: false,
+            tabBarIcon: ({ color, focused }) => (
+              <Home
+                size={focused ? 20 : 18}
+                color={color}
+                strokeWidth={focused ? 2.5 : 2}
+              />
+            ),
           }}
         />
         <Tabs.Screen
           name="categories"
           options={{
             title: "Categories",
-            tabBarIcon: ({ color, size }) => (
-              <Grid3X3 size={size} color={color} />
+            headerShown: false,
+            tabBarIcon: ({ color, focused }) => (
+              <Search
+                size={focused ? 20 : 18}
+                color={color}
+                strokeWidth={focused ? 2.5 : 2}
+              />
             ),
           }}
         />
@@ -53,8 +65,13 @@ export default function TabLayout() {
           name="favorites"
           options={{
             title: "Favorites",
-            tabBarIcon: ({ color, size }) => (
-              <Heart size={size} color={color} />
+            headerShown: false,
+            tabBarIcon: ({ color, focused }) => (
+              <BookmarkIcon
+                size={focused ? 20 : 18}
+                color={color}
+                strokeWidth={focused ? 2.5 : 2}
+              />
             ),
           }}
         />
@@ -62,8 +79,13 @@ export default function TabLayout() {
           name="settings"
           options={{
             title: "Settings",
-            tabBarIcon: ({ color, size }) => (
-              <Settings size={size} color={color} />
+            headerShown: false,
+            tabBarIcon: ({ color, focused }) => (
+              <Settings
+                size={focused ? 20 : 18}
+                color={color}
+                strokeWidth={focused ? 2.5 : 2}
+              />
             ),
           }}
         />

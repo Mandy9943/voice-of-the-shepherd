@@ -13,6 +13,8 @@ import {
   getRandomCommand,
   JesusCommand,
 } from "@/lib/commandsData";
+import { getImageAsset } from "@/lib/imageAssets";
+import { Image } from "expo-image";
 
 import { CongratulationsModal } from "@/components/CongratulationsModal";
 import { QuoteCard } from "@/components/QuoteCard";
@@ -20,15 +22,9 @@ import RescueMode from "@/components/RescueMode";
 import { StreakProgress } from "@/components/StreakProgress";
 import { usePlayerStore } from "@/store/playerStore";
 import { useSettingsStore } from "@/store/settingsStore";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import {
-  BookmarkIcon,
-  Heart,
-  Play,
-  Shield,
-  Target,
-  TrendingUp,
-} from "lucide-react-native";
+import { Play, Shield, Shuffle } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -50,7 +46,7 @@ export default function HomeScreen() {
   const [showRescueMode, setShowRescueMode] = useState(false);
 
   const handleSOSPress = () => {
-    // setShowRescueMode(true);
+    setShowRescueMode(true);
   };
 
   // Get processed commands with local assets
@@ -63,12 +59,6 @@ export default function HomeScreen() {
 
   // Get a random quote for the daily feature
   const dailyQuote = getRandomCommand();
-
-  // Get recent quotes from history
-  const recentQuotes = history
-    .slice(0, 5)
-    .map((id) => quotes.find((q: JesusCommand) => q.id === id))
-    .filter(Boolean);
 
   const handleQuotePress = (id: string) => {
     addToHistory(id);
@@ -136,66 +126,71 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
       >
+        {/* Daily Quote */}
+        <TouchableOpacity
+          style={styles.dailyContainer}
+          onPress={() => handleQuotePress(dailyQuote.id)}
+          activeOpacity={0.9}
+        >
+          <Image
+            source={getImageAsset(dailyQuote.id)}
+            style={styles.dailyImage}
+            contentFit="cover"
+          />
+          <LinearGradient
+            colors={["transparent", "rgba(0,0,0,0.7)"]}
+            style={styles.gradient}
+          />
+          <View style={styles.dailyContent}>
+            <View style={styles.dailyHeader}>
+              <View style={styles.dailyBadge}>
+                <Text style={styles.dailyBadgeText}>Daily Quote</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.dailyPlayButton}
+                onPress={handlePlayDaily}
+                activeOpacity={0.8}
+              >
+                <Play size={16} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.dailyQuote}>{dailyQuote.text}</Text>
+            <Text style={styles.dailyReference}>{dailyQuote.reference}</Text>
+          </View>
+        </TouchableOpacity>
+
+        {/* Play All Teachings Button */}
+        <TouchableOpacity
+          style={[
+            styles.playAllCard,
+            { backgroundColor: theme.card, borderColor: theme.border },
+          ]}
+          onPress={handlePlayAll}
+          activeOpacity={0.8}
+        >
+          <View
+            style={[styles.playAllIconLeft, { backgroundColor: "#2E5BBA" }]}
+          >
+            <Shuffle size={24} color="#FFFFFF" />
+          </View>
+          <View style={styles.playAllContent}>
+            <Text style={[styles.playAllTitle, { color: theme.text }]}>
+              Play All Teachings
+            </Text>
+            <Text style={[styles.playAllSubtitle, { color: theme.secondary }]}>
+              Listen to all {quotes.length} teachings in sequence
+            </Text>
+          </View>
+          <View
+            style={[styles.playAllIconRight, { backgroundColor: "#2E5BBA" }]}
+          >
+            <Play size={20} color="#FFFFFF" />
+          </View>
+        </TouchableOpacity>
+
         {/* Progress Section */}
         <View style={styles.section}>
           <StreakProgress />
-        </View>
-
-        {/* Quick Actions */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>
-            Quick Actions
-          </Text>
-
-          <View style={styles.actionsGrid}>
-            <TouchableOpacity
-              style={[
-                styles.actionCard,
-                { backgroundColor: theme.card, borderColor: theme.border },
-              ]}
-              onPress={() => router.push("/categories")}
-              activeOpacity={0.8}
-            >
-              <View
-                style={[
-                  styles.actionIcon,
-                  { backgroundColor: `${theme.primary}15` },
-                ]}
-              >
-                <Play size={24} color={theme.primary} />
-              </View>
-              <Text style={[styles.actionTitle, { color: theme.text }]}>
-                Browse
-              </Text>
-              <Text style={[styles.actionSubtitle, { color: theme.secondary }]}>
-                Categories
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.actionCard,
-                { backgroundColor: theme.card, borderColor: theme.border },
-              ]}
-              onPress={() => router.push("/favorites")}
-              activeOpacity={0.8}
-            >
-              <View
-                style={[
-                  styles.actionIcon,
-                  { backgroundColor: `${theme.accent}15` },
-                ]}
-              >
-                <BookmarkIcon size={24} color={theme.accent} />
-              </View>
-              <Text style={[styles.actionTitle, { color: theme.text }]}>
-                Saved
-              </Text>
-              <Text style={[styles.actionSubtitle, { color: theme.secondary }]}>
-                Favorites
-              </Text>
-            </TouchableOpacity>
-          </View>
         </View>
 
         {/* Featured Teachings */}
@@ -221,60 +216,6 @@ export default function HomeScreen() {
               onPress={() => router.push(`/quote/${quote.id}`)}
             />
           ))}
-        </View>
-
-        {/* Stats */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>
-            Your Journey
-          </Text>
-
-          <View style={styles.statsGrid}>
-            <View
-              style={[
-                styles.statCard,
-                { backgroundColor: theme.card, borderColor: theme.border },
-              ]}
-            >
-              <TrendingUp size={24} color={theme.primary} />
-              <Text style={[styles.statNumber, { color: theme.text }]}>
-                {streakData.currentStreak}
-              </Text>
-              <Text style={[styles.statLabel, { color: theme.secondary }]}>
-                Day Streak
-              </Text>
-            </View>
-
-            <View
-              style={[
-                styles.statCard,
-                { backgroundColor: theme.card, borderColor: theme.border },
-              ]}
-            >
-              <Target size={24} color={theme.accent} />
-              <Text style={[styles.statNumber, { color: theme.text }]}>
-                {streakData.totalDaysCompleted}
-              </Text>
-              <Text style={[styles.statLabel, { color: theme.secondary }]}>
-                Days Completed
-              </Text>
-            </View>
-
-            <View
-              style={[
-                styles.statCard,
-                { backgroundColor: theme.card, borderColor: theme.border },
-              ]}
-            >
-              <Heart size={24} color={theme.rescue.success} />
-              <Text style={[styles.statNumber, { color: theme.text }]}>
-                {Math.round(progressPercentage)}%
-              </Text>
-              <Text style={[styles.statLabel, { color: theme.secondary }]}>
-                Today&apos;s Goal
-              </Text>
-            </View>
-          </View>
         </View>
       </ScrollView>
 
@@ -405,5 +346,107 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: typography.sizes.xs,
     textAlign: "center",
+  },
+  dailyContent: {
+    flex: 1,
+    justifyContent: "flex-end",
+    padding: 16,
+  },
+  dailyHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  dailyBadge: {
+    backgroundColor: "rgba(212, 175, 55, 0.8)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  dailyBadgeText: {
+    color: "#FFFFFF",
+    fontSize: typography.sizes.xs,
+    fontWeight: "600",
+  },
+  dailyPlayButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dailyQuote: {
+    color: "#FFFFFF",
+    fontSize: typography.sizes.lg,
+    fontFamily: typography.quoteFont,
+    marginBottom: 8,
+    lineHeight: typography.sizes.lg * 1.4,
+  },
+  dailyReference: {
+    color: "rgba(255,255,255,0.8)",
+    fontSize: typography.sizes.sm,
+    fontStyle: "italic",
+  },
+  dailyImage: {
+    width: "100%",
+    height: "100%",
+    position: "absolute",
+  },
+  gradient: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: "70%",
+  },
+  dailyContainer: {
+    height: 240,
+    marginHorizontal: 16,
+    borderRadius: 16,
+    overflow: "hidden",
+    marginBottom: 16,
+  },
+  playAllCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 16,
+    marginBottom: 24,
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  playAllIconLeft: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 16,
+  },
+  playAllContent: {
+    flex: 1,
+  },
+  playAllTitle: {
+    fontSize: typography.sizes.lg,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  playAllSubtitle: {
+    fontSize: typography.sizes.sm,
+  },
+  playAllIconRight: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 12,
   },
 });

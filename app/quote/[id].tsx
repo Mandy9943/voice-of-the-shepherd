@@ -3,7 +3,7 @@ import { colors } from "@/constants/colors";
 import { typography } from "@/constants/typography";
 import { getProcessedCommands } from "@/lib/commandsData";
 import { getImageAsset } from "@/lib/imageAssets";
-import { usePlayerStore } from "@/store/playerStore";
+import { isFavorite, usePlayerStore } from "@/store/playerStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
@@ -39,7 +39,7 @@ export default function QuoteDetailScreen() {
   const {
     currentQuote,
     isPlaying,
-    currentPlaylist,
+    playlist,
     currentIndex,
     playQuote,
     pauseQuote,
@@ -47,7 +47,6 @@ export default function QuoteDetailScreen() {
     nextQuote,
     previousQuote,
     toggleFavorite,
-    isFavorite,
     addToHistory,
   } = usePlayerStore();
   const { isDarkMode } = useSettingsStore();
@@ -58,14 +57,14 @@ export default function QuoteDetailScreen() {
 
   // Auto-navigate when currentQuote changes (for playlist progression)
   useEffect(() => {
-    if (currentQuote && currentQuote.id !== id && currentPlaylist.length > 1) {
+    if (currentQuote && currentQuote.id !== id && playlist.length > 1) {
       console.log(
         `Quote detail screen: Auto-navigating from ${id} to ${currentQuote.id}`
       );
       // Navigate to the new quote without adding to history stack
       router.replace(`/quote/${currentQuote.id}`);
     }
-  }, [currentQuote?.id, id, currentPlaylist.length, router]);
+  }, [currentQuote?.id, id, playlist.length, router]);
 
   useEffect(() => {
     if (quote?.id) {
@@ -86,7 +85,7 @@ export default function QuoteDetailScreen() {
   const isCurrentQuote = currentQuote?.id === quote.id;
   const isCurrentlyPlaying = isCurrentQuote && isPlaying;
   const isFavorited = isFavorite(quote.id);
-  const showPlaylistControls = currentPlaylist.length > 1;
+  const showPlaylistControls = playlist.length > 1;
 
   const handlePlayPause = () => {
     if (isCurrentQuote) {
@@ -237,7 +236,7 @@ export default function QuoteDetailScreen() {
           {showPlaylistControls && (
             <View style={styles.playlistInfo}>
               <Text style={styles.playlistText}>
-                {currentIndex + 1} of {currentPlaylist.length}
+                {currentIndex + 1} of {playlist.length}
               </Text>
             </View>
           )}
