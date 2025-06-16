@@ -2,6 +2,7 @@ import { getAudioAsset } from "@/lib/audioAssets";
 import { getPeacefulAmbientMusic } from "@/lib/musicAssets";
 import { Quote, RescueSession, StreakData } from "@/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Router } from "expo-router";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -30,11 +31,11 @@ interface PlayerState {
   // Actions
   setAudioPlayer: (player: any) => void;
   setBackgroundMusicPlayer: (player: any) => void;
-  playQuote: (quote: Quote, playlist?: Quote[], router?: any) => void;
+  playQuote: (quote: Quote, playlist?: Quote[], router?: Router) => void;
   pauseQuote: () => void;
   resumeQuote: () => void;
-  nextQuote: (router: any) => void;
-  previousQuote: (router: any) => void;
+  nextQuote: (router?: Router) => void;
+  previousQuote: (router?: Router) => void;
   swipeToNext: () => Quote | null;
   swipeToPrevious: () => Quote | null;
   setTikTokMode: (enabled: boolean) => void;
@@ -192,7 +193,7 @@ export const usePlayerStore = create<PlayerState>()(
       swipeToNext: () => {
         const { isTikTokMode } = get();
         if (isTikTokMode) {
-          get().nextQuote(null);
+          get().nextQuote();
           return get().currentQuote;
         }
         return null;
@@ -201,7 +202,7 @@ export const usePlayerStore = create<PlayerState>()(
       swipeToPrevious: () => {
         const { isTikTokMode } = get();
         if (isTikTokMode) {
-          get().previousQuote(null);
+          get().previousQuote();
           return get().currentQuote;
         }
         return null;
@@ -234,85 +235,95 @@ export const usePlayerStore = create<PlayerState>()(
       },
 
       incrementListenedCount: () => {
-        const state = get();
-        const today = new Date().toISOString().split("T")[0];
+        set((state) => {
+          const today = new Date().toISOString().split("T")[0];
+          let streakData = state.streakData;
 
-        // Reset progress if it's a new day
-        if (state.streakData.todayProgress.date !== today) {
-          state.resetDailyProgressIfNeeded();
-        }
-
-        const newListenedCount =
-          state.streakData.todayProgress.quotesListened + 1;
-        const goalCompleted = newListenedCount >= state.dailyGoal;
-
-        // Check if this completes the daily goal for the first time today
-        const shouldShowCongratulations =
-          goalCompleted && !state.streakData.todayProgress.completed;
-
-        let newStreakData = { ...state.streakData };
-
-        // Update total quotes listened
-        newStreakData.totalQuotesListened += 1;
-
-        if (goalCompleted && !state.streakData.todayProgress.completed) {
-          // Goal completed for the first time today
-          const yesterday = new Date();
-          yesterday.setDate(yesterday.getDate() - 1);
-          const yesterdayStr = yesterday.toISOString().split("T")[0];
-
-          if (state.streakData.lastCompletedDate === yesterdayStr) {
-            // Consecutive day
-            newStreakData.currentStreak += 1;
-          } else if (state.streakData.lastCompletedDate !== today) {
-            // New streak or broken streak
-            newStreakData.currentStreak = 1;
-          }
-
-          newStreakData.lastCompletedDate = today;
-          newStreakData.totalDaysCompleted += 1;
-          newStreakData.longestStreak = Math.max(
-            newStreakData.longestStreak,
-            newStreakData.currentStreak
-          );
-
-          // Update weekly and monthly streaks
-          if (newStreakData.currentStreak % 7 === 0) {
-            newStreakData.weeklyStreak += 1;
-          }
-          if (newStreakData.currentStreak % 30 === 0) {
-            newStreakData.monthlyStreak += 1;
-          }
-        }
-
-        newStreakData.todayProgress = {
-          quotesListened: newListenedCount,
-          date: today,
-          completed: goalCompleted,
-        };
-
-        set({
-          streakData: newStreakData,
-          showCongratulationsModal: shouldShowCongratulations,
-        });
-      },
-
-      resetDailyProgressIfNeeded: () => {
-        const state = get();
-        const today = new Date().toISOString().split("T")[0];
-
-        if (state.streakData.todayProgress.date !== today) {
-          set({
-            streakData: {
-              ...state.streakData,
+          // Reset progress if it's a new day
+          if (streakData.todayProgress.date !== today) {
+            streakData = {
+              ...streakData,
               todayProgress: {
                 quotesListened: 0,
                 date: today,
                 completed: false,
               },
-            },
-          });
-        }
+            };
+          }
+
+          const newListenedCount = streakData.todayProgress.quotesListened + 1;
+          const goalCompleted = newListenedCount >= state.dailyGoal;
+          const wasCompleted = streakData.todayProgress.completed;
+          const shouldShowCongratulations = goalCompleted && !wasCompleted;
+
+          let newStreakData = { ...streakData };
+          newStreakData.totalQuotesListened =
+            (newStreakData.totalQuotesListened || 0) + 1;
+
+          if (goalCompleted && !wasCompleted) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split("T")[0];
+
+            if (newStreakData.lastCompletedDate === yesterdayStr) {
+              newStreakData.currentStreak += 1;
+            } else if (newStreakData.lastCompletedDate !== today) {
+              // New streak or broken streak
+              newStreakData.currentStreak = 1;
+            }
+
+            newStreakData.lastCompletedDate = today;
+            newStreakData.totalDaysCompleted += 1;
+            newStreakData.longestStreak = Math.max(
+              newStreakData.longestStreak,
+              newStreakData.currentStreak
+            );
+
+            // Update weekly and monthly streaks
+            if (
+              newStreakData.currentStreak > 0 &&
+              newStreakData.currentStreak % 7 === 0
+            ) {
+              newStreakData.weeklyStreak += 1;
+            }
+            if (
+              newStreakData.currentStreak > 0 &&
+              newStreakData.currentStreak % 30 === 0
+            ) {
+              newStreakData.monthlyStreak += 1;
+            }
+          }
+
+          newStreakData.todayProgress = {
+            quotesListened: newListenedCount,
+            date: today,
+            completed: goalCompleted,
+          };
+
+          return {
+            streakData: newStreakData,
+            showCongratulationsModal: shouldShowCongratulations,
+          };
+        });
+      },
+
+      resetDailyProgressIfNeeded: () => {
+        set((state) => {
+          const today = new Date().toISOString().split("T")[0];
+          if (state.streakData.todayProgress.date !== today) {
+            return {
+              streakData: {
+                ...state.streakData,
+                todayProgress: {
+                  quotesListened: 0,
+                  date: today,
+                  completed: false,
+                },
+              },
+            };
+          }
+          return {}; // No changes needed
+        });
       },
 
       dismissCongratulationsModal: () => {
@@ -446,12 +457,6 @@ export const usePlayerStore = create<PlayerState>()(
     }
   )
 );
-
-// Helper function to check if a quote is favorited
-export const isFavorite = (quoteId: string) => {
-  const { favorites } = usePlayerStore.getState();
-  return favorites.includes(quoteId);
-};
 
 // Helper function to get current playlist
 export const getCurrentPlaylist = () => {

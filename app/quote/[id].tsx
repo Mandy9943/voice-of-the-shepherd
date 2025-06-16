@@ -3,7 +3,7 @@ import { colors } from "@/constants/colors";
 import { typography } from "@/constants/typography";
 import { getProcessedCommands } from "@/lib/commandsData";
 import { getImageAsset } from "@/lib/imageAssets";
-import { isFavorite, usePlayerStore } from "@/store/playerStore";
+import { usePlayerStore } from "@/store/playerStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
@@ -48,6 +48,7 @@ export default function QuoteDetailScreen() {
     previousQuote,
     toggleFavorite,
     addToHistory,
+    favorites,
   } = usePlayerStore();
   const { isDarkMode } = useSettingsStore();
 
@@ -73,7 +74,7 @@ export default function QuoteDetailScreen() {
 
   const isCurrentQuote = currentQuote?.id === quote.id;
   const isCurrentlyPlaying = isCurrentQuote && isPlaying;
-  const isFavorited = isFavorite(quote.id);
+  const isFavorited = favorites.includes(quote.id);
   const showPlaylistControls = playlist.length > 1;
 
   const handlePlayPause = () => {
@@ -116,7 +117,6 @@ export default function QuoteDetailScreen() {
     // Start playing from this quote with all quotes as playlist
     playQuote(quote, quotes);
   };
-  console.log(currentQuote);
 
   return (
     <View style={styles.container}>

@@ -1,7 +1,7 @@
 import { colors } from "@/constants/colors";
 import { typography } from "@/constants/typography";
 import { getImageAsset } from "@/lib/imageAssets";
-import { isFavorite, usePlayerStore } from "@/store/playerStore";
+import { usePlayerStore } from "@/store/playerStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { Quote } from "@/types";
 import { Image } from "expo-image";
@@ -42,7 +42,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
 
   const isCurrentQuote = currentQuote?.id === quote.id;
   const isCurrentlyPlaying = isCurrentQuote && isPlaying;
-  const isFavorited = isFavorite(quote.id);
+  const isFavorited = favorites.includes(quote.id);
 
   const handlePlayPause = () => {
     if (isCurrentQuote) {
