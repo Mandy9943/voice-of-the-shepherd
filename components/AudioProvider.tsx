@@ -64,9 +64,8 @@ export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
   // Monitor playback state changes to manage background music
   useEffect(() => {
     const monitorPlaybackForBackgroundMusic = () => {
-      const { isPlaying, currentQuote, currentPlaylist } =
-        usePlayerStore.getState();
-      const hasActiveSession = currentQuote && currentPlaylist.length > 0;
+      const { isPlaying, currentQuote, playlist } = usePlayerStore.getState();
+      const hasActiveSession = currentQuote && playlist.length > 0;
 
       if (enableBackgroundMusic) {
         // Start background music when session begins
@@ -163,7 +162,7 @@ export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
           `AudioProvider: Track finished for Quote ID: ${storeCurrentQuoteId}. Device not playing. Store intended play: ${storeIsPlaying}.`
         );
 
-        const currentPlaylist = store.currentPlaylist;
+        const currentPlaylist = store.playlist;
         const currentIndex = store.currentIndex;
 
         if (currentIndex < currentPlaylist.length - 1) {

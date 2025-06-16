@@ -1,22 +1,33 @@
 import { getAudioAsset } from "@/lib/audioAssets";
 import { getPeacefulAmbientMusic } from "@/lib/musicAssets";
-import { Quote, StreakData } from "@/types";
+import { Quote, RescueSession, StreakData } from "@/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 interface PlayerState {
   currentQuote: Quote | null;
-  isPlaying: boolean;
-  currentPlaylist: Quote[];
+  playlist: Quote[];
   currentIndex: number;
+  isPlaying: boolean;
   favorites: string[];
   history: string[];
   streakData: StreakData;
+  dailyGoal: number;
   showCongratulationsModal: boolean;
+  isTikTokMode: boolean;
+
+  // Audio Player
   audioPlayer: any;
   backgroundMusicPlayer: any;
   isBackgroundMusicPlaying: boolean;
+
+  // Rescue Mode
+  isRescueModeActive: boolean;
+  currentRescueSession: RescueSession | null;
+  rescueSessions: RescueSession[];
+
+  // Actions
   setAudioPlayer: (player: any) => void;
   setBackgroundMusicPlayer: (player: any) => void;
   playQuote: (quote: Quote, playlist?: Quote[]) => void;
@@ -24,326 +35,261 @@ interface PlayerState {
   resumeQuote: () => void;
   nextQuote: () => void;
   previousQuote: () => void;
-  startBackgroundMusic: () => void;
-  stopBackgroundMusic: () => void;
+  swipeToNext: () => Quote | null;
+  swipeToPrevious: () => Quote | null;
+  setTikTokMode: (enabled: boolean) => void;
   toggleFavorite: (quoteId: string) => void;
-  isFavorite: (quoteId: string) => boolean;
   addToHistory: (quoteId: string) => void;
-  incrementDailyProgress: () => void;
+  setDailyGoal: (goal: number) => void;
+  incrementListenedCount: () => void;
   resetDailyProgressIfNeeded: () => void;
   dismissCongratulationsModal: () => void;
-  getTodayDateString: () => string;
+
+  // Background Music Actions
+  startBackgroundMusic: () => void;
+  stopBackgroundMusic: () => void;
+
+  // Rescue Mode Actions
+  startRescueMode: () => void;
+  endRescueMode: (notes?: string) => void;
+  updateRescueSession: (updates: Partial<RescueSession>) => void;
+  addRescueQuoteViewed: (quoteId: string) => void;
+  markPrayerCompleted: () => void;
+  markBreathingCompleted: () => void;
 }
 
-const getTodayDateString = (): string => {
-  return new Date().toISOString().split("T")[0];
-};
+const today = new Date().toISOString().split("T")[0];
 
-const createInitialStreakData = (): StreakData => {
-  const today = getTodayDateString();
-  return {
-    currentStreak: 0,
-    longestStreak: 0,
-    totalDaysCompleted: 0,
-    dailyProgress: [],
-    lastCompletedDate: null,
-    todayProgress: {
-      date: today,
-      quotesListened: 0,
-      completed: false,
-    },
-  };
+const initialStreakData: StreakData = {
+  currentStreak: 0,
+  longestStreak: 0,
+  lastCompletedDate: null,
+  totalDaysCompleted: 0,
+  dailyProgress: [],
+  todayProgress: {
+    quotesListened: 0,
+    date: today,
+    completed: false,
+  },
+  weeklyStreak: 0,
+  monthlyStreak: 0,
+  totalQuotesListened: 0,
 };
 
 export const usePlayerStore = create<PlayerState>()(
   persist(
     (set, get) => ({
       currentQuote: null,
-      isPlaying: false,
-      currentPlaylist: [],
+      playlist: [],
       currentIndex: 0,
+      isPlaying: false,
       favorites: [],
       history: [],
-      streakData: createInitialStreakData(),
+      streakData: initialStreakData,
+      dailyGoal: 10, // Default to 10 teachings per day
       showCongratulationsModal: false,
+      isTikTokMode: false,
       audioPlayer: null,
       backgroundMusicPlayer: null,
       isBackgroundMusicPlaying: false,
 
-      getTodayDateString,
+      // Rescue Mode
+      isRescueModeActive: false,
+      currentRescueSession: null,
+      rescueSessions: [],
 
-      setAudioPlayer: (player) => {
-        set({ audioPlayer: player });
-      },
-
-      setBackgroundMusicPlayer: (player) => {
-        set({ backgroundMusicPlayer: player });
-      },
-
-      startBackgroundMusic: async () => {
-        const { backgroundMusicPlayer, isBackgroundMusicPlaying } = get();
-        if (backgroundMusicPlayer && !isBackgroundMusicPlaying) {
-          try {
-            const musicAsset = getPeacefulAmbientMusic();
-            console.log("Starting background music:", !!musicAsset);
-            if (musicAsset) {
-              await backgroundMusicPlayer.replace(musicAsset);
-              backgroundMusicPlayer.loop = true;
-              backgroundMusicPlayer.volume = 0.3; // Lower volume for background
-              await backgroundMusicPlayer.play();
-              set({ isBackgroundMusicPlaying: true });
-              console.log("Background music started successfully");
-            }
-          } catch (error) {
-            console.error("Error starting background music:", error);
-          }
-        } else if (isBackgroundMusicPlaying) {
-          console.log("Background music is already playing");
-        }
-      },
-
-      stopBackgroundMusic: async () => {
-        const { backgroundMusicPlayer, isBackgroundMusicPlaying } = get();
-        if (backgroundMusicPlayer && isBackgroundMusicPlaying) {
-          try {
-            console.log("Stopping background music");
-            await backgroundMusicPlayer.pause();
-            set({ isBackgroundMusicPlaying: false });
-            console.log("Background music stopped successfully");
-          } catch (error) {
-            console.error("Error stopping background music:", error);
-          }
-        }
-      },
+      setAudioPlayer: (player) => set({ audioPlayer: player }),
+      setBackgroundMusicPlayer: (player) =>
+        set({ backgroundMusicPlayer: player }),
 
       playQuote: async (quote, playlist = []) => {
-        console.log("playQuote called with quote:", quote.id);
         const { audioPlayer } = get();
-        console.log("audioPlayer available:", !!audioPlayer);
-
-        const currentPlaylist = playlist.length > 0 ? playlist : [quote];
-        const currentIndex = currentPlaylist.findIndex(
-          (q) => q.id === quote.id
-        );
+        const newPlaylist = playlist.length > 0 ? playlist : [quote];
+        const index = newPlaylist.findIndex((q) => q.id === quote.id);
 
         set({
           currentQuote: quote,
-          isPlaying: true,
-          currentPlaylist,
-          currentIndex: currentIndex >= 0 ? currentIndex : 0,
+          playlist: newPlaylist,
+          currentIndex: index >= 0 ? index : 0,
         });
 
-        // Play the actual audio
         if (audioPlayer) {
-          try {
-            const audioAsset = getAudioAsset(quote.id);
-            console.log(
-              "Audio asset found:",
-              !!audioAsset,
-              "for quote:",
-              quote.id
-            );
-            if (audioAsset) {
-              console.log("Attempting to replace and play audio...");
-              await audioPlayer.replace(audioAsset);
-              await audioPlayer.play();
-              console.log("Audio should be playing now");
-            } else {
-              console.log(`No audio available for quote ${quote.id}`);
-            }
-          } catch (error) {
-            console.error("Error playing audio:", error);
+          const audioAsset = getAudioAsset(quote.id);
+          if (audioAsset) {
+            await audioPlayer.replace(audioAsset);
+            await audioPlayer.play();
           }
-        } else {
-          console.log("No audio player available in store");
         }
-
-        // Increment daily progress when playing a quote
-        get().incrementDailyProgress();
       },
 
       pauseQuote: () => {
         const { audioPlayer } = get();
-        set({ isPlaying: false });
-        if (audioPlayer) {
-          audioPlayer.pause();
-        }
+        if (audioPlayer) audioPlayer.pause();
       },
 
       resumeQuote: () => {
         const { audioPlayer } = get();
-        set({ isPlaying: true });
-        if (audioPlayer) {
-          audioPlayer.play();
-        }
+        if (audioPlayer) audioPlayer.play();
       },
 
       nextQuote: async () => {
-        console.log("nextQuote called");
-        const { currentPlaylist, currentIndex, audioPlayer } = get();
-        console.log(
-          "Playlist length:",
-          currentPlaylist.length,
-          "Current index:",
-          currentIndex
-        );
-
-        if (currentPlaylist.length === 0) {
-          console.log("No playlist available");
-          return;
-        }
-
-        const nextIndex = (currentIndex + 1) % currentPlaylist.length;
-        const nextQuote = currentPlaylist[nextIndex];
-        console.log("Next index:", nextIndex, "Next quote:", nextQuote?.id);
-
-        if (nextQuote) {
-          // Update current quote and index, but don't set isPlaying yet
-          // Let AudioProvider sync the isPlaying state when audio actually starts
+        const { playlist, currentIndex, audioPlayer } = get();
+        if (playlist.length > 0) {
+          const nextIndex = (currentIndex + 1) % playlist.length;
+          const nextQuote = playlist[nextIndex];
           set({
             currentQuote: nextQuote,
             currentIndex: nextIndex,
-            // Removed: isPlaying: true,
           });
-
-          // Play the next audio
           if (audioPlayer) {
-            try {
-              const audioAsset = getAudioAsset(nextQuote.id);
-              console.log("Next audio asset found:", !!audioAsset);
-              if (audioAsset) {
-                console.log("Replacing and playing next audio...");
-                await audioPlayer.replace(audioAsset);
-                await audioPlayer.play();
-                console.log("Next audio started playing");
-                // AudioProvider will sync isPlaying: true when it detects the audio is playing
-              }
-            } catch (error) {
-              console.error("Error playing next audio:", error);
-              // If there's an error, ensure we don't leave the UI in a stuck state
-              set({ isPlaying: false });
+            const audioAsset = getAudioAsset(nextQuote.id);
+            if (audioAsset) {
+              await audioPlayer.replace(audioAsset);
+              await audioPlayer.play();
             }
           }
-
-          // Add to history
-          get().addToHistory(nextQuote.id);
-          // Increment daily progress
-          get().incrementDailyProgress();
         }
       },
 
       previousQuote: async () => {
-        console.log("previousQuote called");
-        const { currentPlaylist, currentIndex, audioPlayer } = get();
-        console.log(
-          "Playlist length:",
-          currentPlaylist.length,
-          "Current index:",
-          currentIndex
-        );
-
-        if (currentPlaylist.length === 0) {
-          console.log("No playlist available");
-          return;
-        }
-
-        const prevIndex =
-          currentIndex === 0 ? currentPlaylist.length - 1 : currentIndex - 1;
-        const prevQuote = currentPlaylist[prevIndex];
-        console.log(
-          "Previous index:",
-          prevIndex,
-          "Previous quote:",
-          prevQuote?.id
-        );
-
-        if (prevQuote) {
-          // Update current quote and index, but don't set isPlaying yet
+        const { playlist, currentIndex, audioPlayer } = get();
+        if (playlist.length > 0) {
+          const prevIndex =
+            currentIndex === 0 ? playlist.length - 1 : currentIndex - 1;
+          const prevQuote = playlist[prevIndex];
           set({
             currentQuote: prevQuote,
             currentIndex: prevIndex,
-            // Removed: isPlaying: true,
           });
-
-          // Play the previous audio
           if (audioPlayer) {
-            try {
-              const audioAsset = getAudioAsset(prevQuote.id);
-              console.log("Previous audio asset found:", !!audioAsset);
-              if (audioAsset) {
-                console.log("Replacing and playing previous audio...");
-                await audioPlayer.replace(audioAsset);
-                await audioPlayer.play();
-                console.log("Previous audio started playing");
-                // AudioProvider will sync isPlaying: true when it detects the audio is playing
-              }
-            } catch (error) {
-              console.error("Error playing previous audio:", error);
-              set({ isPlaying: false });
+            const audioAsset = getAudioAsset(prevQuote.id);
+            if (audioAsset) {
+              await audioPlayer.replace(audioAsset);
+              await audioPlayer.play();
             }
           }
-
-          // Add to history
-          get().addToHistory(prevQuote.id);
-          // Increment daily progress
-          get().incrementDailyProgress();
         }
+      },
+
+      swipeToNext: () => {
+        const { isTikTokMode } = get();
+        if (isTikTokMode) {
+          get().nextQuote();
+          return get().currentQuote;
+        }
+        return null;
+      },
+
+      swipeToPrevious: () => {
+        const { isTikTokMode } = get();
+        if (isTikTokMode) {
+          get().previousQuote();
+          return get().currentQuote;
+        }
+        return null;
+      },
+
+      setTikTokMode: (enabled) => {
+        set({ isTikTokMode: enabled });
       },
 
       toggleFavorite: (quoteId) => {
-        const favorites = [...get().favorites];
-        const index = favorites.indexOf(quoteId);
-
-        if (index === -1) {
-          favorites.push(quoteId);
-        } else {
-          favorites.splice(index, 1);
-        }
-
-        set({ favorites });
-      },
-
-      isFavorite: (quoteId) => {
-        return get().favorites.includes(quoteId);
+        set((state) => ({
+          favorites: state.favorites.includes(quoteId)
+            ? state.favorites.filter((id) => id !== quoteId)
+            : [...state.favorites, quoteId],
+        }));
       },
 
       addToHistory: (quoteId) => {
-        const history = [
-          quoteId,
-          ...get().history.filter((id) => id !== quoteId),
-        ];
-        if (history.length > 20) history.pop();
-        set({ history });
+        set((state) => {
+          const newHistory = [
+            quoteId,
+            ...state.history.filter((id) => id !== quoteId),
+          ];
+          return { history: newHistory.slice(0, 50) }; // Keep last 50 items
+        });
+      },
+
+      setDailyGoal: (goal) => {
+        set({ dailyGoal: goal });
+      },
+
+      incrementListenedCount: () => {
+        const state = get();
+        const today = new Date().toISOString().split("T")[0];
+
+        // Reset progress if it's a new day
+        if (state.streakData.todayProgress.date !== today) {
+          state.resetDailyProgressIfNeeded();
+        }
+
+        const newListenedCount =
+          state.streakData.todayProgress.quotesListened + 1;
+        const goalCompleted = newListenedCount >= state.dailyGoal;
+
+        // Check if this completes the daily goal for the first time today
+        const shouldShowCongratulations =
+          goalCompleted && !state.streakData.todayProgress.completed;
+
+        let newStreakData = { ...state.streakData };
+
+        // Update total quotes listened
+        newStreakData.totalQuotesListened += 1;
+
+        if (goalCompleted && !state.streakData.todayProgress.completed) {
+          // Goal completed for the first time today
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          const yesterdayStr = yesterday.toISOString().split("T")[0];
+
+          if (state.streakData.lastCompletedDate === yesterdayStr) {
+            // Consecutive day
+            newStreakData.currentStreak += 1;
+          } else if (state.streakData.lastCompletedDate !== today) {
+            // New streak or broken streak
+            newStreakData.currentStreak = 1;
+          }
+
+          newStreakData.lastCompletedDate = today;
+          newStreakData.totalDaysCompleted += 1;
+          newStreakData.longestStreak = Math.max(
+            newStreakData.longestStreak,
+            newStreakData.currentStreak
+          );
+
+          // Update weekly and monthly streaks
+          if (newStreakData.currentStreak % 7 === 0) {
+            newStreakData.weeklyStreak += 1;
+          }
+          if (newStreakData.currentStreak % 30 === 0) {
+            newStreakData.monthlyStreak += 1;
+          }
+        }
+
+        newStreakData.todayProgress = {
+          quotesListened: newListenedCount,
+          date: today,
+          completed: goalCompleted,
+        };
+
+        set({
+          streakData: newStreakData,
+          showCongratulationsModal: shouldShowCongratulations,
+        });
       },
 
       resetDailyProgressIfNeeded: () => {
-        const { streakData } = get();
-        const today = getTodayDateString();
+        const state = get();
+        const today = new Date().toISOString().split("T")[0];
 
-        if (streakData.todayProgress.date !== today) {
-          // New day - check if we need to update streak
-          const yesterday = new Date();
-          yesterday.setDate(yesterday.getDate() - 1);
-          const yesterdayString = yesterday.toISOString().split("T")[0];
-
-          let newCurrentStreak = streakData.currentStreak;
-
-          // If yesterday was completed, maintain streak
-          // If not, reset streak to 0
-          if (
-            streakData.lastCompletedDate !== yesterdayString &&
-            streakData.currentStreak > 0
-          ) {
-            newCurrentStreak = 0;
-          }
-
+        if (state.streakData.todayProgress.date !== today) {
           set({
             streakData: {
-              ...streakData,
-              currentStreak: newCurrentStreak,
+              ...state.streakData,
               todayProgress: {
-                date: today,
                 quotesListened: 0,
+                date: today,
                 completed: false,
               },
             },
@@ -351,86 +297,146 @@ export const usePlayerStore = create<PlayerState>()(
         }
       },
 
-      incrementDailyProgress: () => {
-        get().resetDailyProgressIfNeeded();
+      dismissCongratulationsModal: () => {
+        set({ showCongratulationsModal: false });
+      },
 
-        const { streakData } = get();
-        const today = getTodayDateString();
+      startBackgroundMusic: async () => {
+        const { backgroundMusicPlayer, isBackgroundMusicPlaying } = get();
+        if (backgroundMusicPlayer && !isBackgroundMusicPlaying) {
+          try {
+            const musicAsset = getPeacefulAmbientMusic();
+            if (musicAsset) {
+              await backgroundMusicPlayer.replace(musicAsset);
+              backgroundMusicPlayer.loop = true;
+              backgroundMusicPlayer.volume = 0.3; // Lower volume for background
+              await backgroundMusicPlayer.play();
+              set({ isBackgroundMusicPlaying: true });
+            }
+          } catch (error) {
+            console.error("Error starting background music:", error);
+          }
+        }
+      },
 
-        const newQuotesListened = streakData.todayProgress.quotesListened + 1;
-        const wasCompleted = streakData.todayProgress.completed;
-        const isNowCompleted = newQuotesListened >= 3;
+      stopBackgroundMusic: async () => {
+        const { backgroundMusicPlayer, isBackgroundMusicPlaying } = get();
+        if (backgroundMusicPlayer && isBackgroundMusicPlaying) {
+          try {
+            await backgroundMusicPlayer.pause();
+            set({ isBackgroundMusicPlaying: false });
+          } catch (error) {
+            console.error("Error stopping background music:", error);
+          }
+        }
+      },
 
-        // Update today's progress
-        const updatedTodayProgress = {
-          ...streakData.todayProgress,
-          quotesListened: newQuotesListened,
-          completed: isNowCompleted,
+      // Rescue Mode Actions
+      startRescueMode: () => {
+        const now = new Date().toISOString();
+        const newSession: RescueSession = {
+          id: Date.now().toString(),
+          startTime: now,
+          quotesViewed: [],
+          prayerCompleted: false,
+          breathingExerciseCompleted: false,
         };
 
-        // Update daily progress history
-        const updatedDailyProgress = [
-          ...streakData.dailyProgress.filter((p) => p.date !== today),
-          updatedTodayProgress,
-        ].slice(-30); // Keep last 30 days
-
-        let newCurrentStreak = streakData.currentStreak;
-        let newLongestStreak = streakData.longestStreak;
-        let newTotalDaysCompleted = streakData.totalDaysCompleted;
-        let newLastCompletedDate = streakData.lastCompletedDate;
-
-        // If just completed today (first time)
-        if (isNowCompleted && !wasCompleted) {
-          newCurrentStreak = streakData.currentStreak + 1;
-          newTotalDaysCompleted = streakData.totalDaysCompleted + 1;
-          newLastCompletedDate = today;
-
-          if (newCurrentStreak > newLongestStreak) {
-            newLongestStreak = newCurrentStreak;
-          }
-
-          // Show congratulations modal
-          set({ showCongratulationsModal: true });
-        }
-
         set({
-          streakData: {
-            ...streakData,
-            currentStreak: newCurrentStreak,
-            longestStreak: newLongestStreak,
-            totalDaysCompleted: newTotalDaysCompleted,
-            lastCompletedDate: newLastCompletedDate,
-            dailyProgress: updatedDailyProgress,
-            todayProgress: updatedTodayProgress,
-          },
+          isRescueModeActive: true,
+          currentRescueSession: newSession,
         });
       },
 
-      dismissCongratulationsModal: () => {
-        set({ showCongratulationsModal: false });
+      endRescueMode: (notes) => {
+        const state = get();
+        if (state.currentRescueSession) {
+          const now = new Date().toISOString();
+          const startTime = new Date(state.currentRescueSession.startTime);
+          const endTime = new Date(now);
+          const duration = Math.floor(
+            (endTime.getTime() - startTime.getTime()) / 1000
+          );
+
+          const completedSession: RescueSession = {
+            ...state.currentRescueSession,
+            endTime: now,
+            duration,
+            notes,
+          };
+
+          set({
+            isRescueModeActive: false,
+            currentRescueSession: null,
+            rescueSessions: [completedSession, ...state.rescueSessions].slice(
+              0,
+              50
+            ), // Keep last 50 sessions
+          });
+        }
+      },
+
+      updateRescueSession: (updates) => {
+        const state = get();
+        if (state.currentRescueSession) {
+          set({
+            currentRescueSession: {
+              ...state.currentRescueSession,
+              ...updates,
+            },
+          });
+        }
+      },
+
+      addRescueQuoteViewed: (quoteId) => {
+        const state = get();
+        if (state.currentRescueSession) {
+          const quotesViewed = [...state.currentRescueSession.quotesViewed];
+          if (!quotesViewed.includes(quoteId)) {
+            quotesViewed.push(quoteId);
+            state.updateRescueSession({ quotesViewed });
+          }
+        }
+      },
+
+      markPrayerCompleted: () => {
+        const state = get();
+        if (state.currentRescueSession) {
+          state.updateRescueSession({ prayerCompleted: true });
+        }
+      },
+
+      markBreathingCompleted: () => {
+        const state = get();
+        if (state.currentRescueSession) {
+          state.updateRescueSession({ breathingExerciseCompleted: true });
+        }
       },
     }),
     {
       name: "player-storage",
       storage: createJSONStorage(() => AsyncStorage),
-      // Exclude audio players from persistence since they can't be serialized
       partialize: (state) => ({
-        currentQuote: state.currentQuote,
-        isPlaying: state.isPlaying,
-        currentPlaylist: state.currentPlaylist,
-        currentIndex: state.currentIndex,
         favorites: state.favorites,
         history: state.history,
         streakData: state.streakData,
-        showCongratulationsModal: state.showCongratulationsModal,
-        // Don't persist: audioPlayer, backgroundMusicPlayer, isBackgroundMusicPlaying
+        dailyGoal: state.dailyGoal,
+        rescueSessions: state.rescueSessions,
+        isTikTokMode: state.isTikTokMode,
+        // Exclude non-serializable or session-specific state
       }),
-      onRehydrateStorage: () => (state) => {
-        // Reset daily progress if needed when app loads
-        if (state) {
-          state.resetDailyProgressIfNeeded();
-        }
-      },
     }
   )
 );
+
+// Helper function to check if a quote is favorited
+export const isFavorite = (quoteId: string) => {
+  const { favorites } = usePlayerStore.getState();
+  return favorites.includes(quoteId);
+};
+
+// Helper function to get current playlist
+export const getCurrentPlaylist = () => {
+  const { playlist } = usePlayerStore.getState();
+  return playlist;
+};

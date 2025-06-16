@@ -1,45 +1,87 @@
 export const colors = {
   light: {
-    background: '#F5F2E7',
-    card: '#FFFFFF',
-    text: '#333333',
-    primary: '#223C63',
-    secondary: '#6E665D',
-    accent: '#D4AF37',
-    muted: '#E5E0D5',
-    border: '#D8D0C0',
+    background: "#FEFEFE",
+    card: "#FFFFFF",
+    text: "#1A1A1A",
+    primary: "#8B5A3C",
+    secondary: "#6B7280",
+    accent: "#E25822",
+    muted: "#F5F5F0",
+    border: "#E5E0D5",
+    rescue: {
+      background: "#E8F4FD",
+      primary: "#2563EB",
+      secondary: "#1E40AF",
+      success: "#059669",
+      warning: "#D97706",
+      danger: "#DC2626",
+    },
   },
   dark: {
-    background: '#1A1A1A',
-    card: '#2A2A2A',
-    text: '#F0EAE0',
-    primary: '#4A6491',
-    secondary: '#8C8275',
-    accent: '#E0C56E',
-    muted: '#3A3A3A',
-    border: '#444444',
-  }
+    background: "#0A0A0A",
+    card: "#1A1A1A",
+    text: "#FEFEFE",
+    primary: "#D4A574",
+    secondary: "#9CA3AF",
+    accent: "#F97316",
+    muted: "#2A2A2A",
+    border: "#374151",
+    rescue: {
+      background: "#1E293B",
+      primary: "#3B82F6",
+      secondary: "#60A5FA",
+      success: "#10B981",
+      warning: "#F59E0B",
+      danger: "#EF4444",
+    },
+  },
 };
 
-export const categoryColors = {
-  'Kingdom of God': '#5D8AA8',
-  'Prayer & Faith': '#8B008B',
-  'Love & Commandments': '#E25822',
-  'Obedience & Discipleship': '#228B22',
-  'Repentance & Righteousness': '#4B0082',
-  'Salvation': '#B22222',
-  'Wisdom': '#DAA520',
-  'Healing & Miracles': '#20B2AA',
-  'Peace & Courage': '#4682B4',
-  'Judgment, Mercy & Forgiveness': '#9932CC',
-  'Humility & Service': '#8B4513',
-  'Provision & Trust': '#2E8B57',
-  'Truth & Word': '#800000',
-  'Blessings & Beatitudes': '#FF8C00',
-  'Evangelism & Discipleship': '#6B8E23',
-  'Holy Spirit': '#CD5C5C',
-  'Judgment Day & Watchfulness': '#2F4F4F',
-  'Worship & Spirit': '#4169E1',
-  'Unity & Oneness': '#32CD32',
-  'Resurrection & Eternal Life': '#FFD700',
+const colorPalette = [
+  "#e6194B",
+  "#3cb44b",
+  "#ffe119",
+  "#4363d8",
+  "#f58231",
+  "#911eb4",
+  "#46f0f0",
+  "#f032e6",
+  "#bcf60c",
+  "#fabebe",
+  "#008080",
+  "#e6beff",
+  "#9A6324",
+  "#fffac8",
+  "#800000",
+  "#aaffc3",
+  "#808000",
+  "#ffd8b1",
+  "#000075",
+  "#a9a9a9",
+];
+
+const stringToHash = (str: string): number => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
 };
+
+const getColorForString = (str: string): string => {
+  if (!str) return colorPalette[0];
+  const hash = stringToHash(str);
+  const index = Math.abs(hash) % colorPalette.length;
+  return colorPalette[index];
+};
+
+export const categoryColors = new Proxy<{ [key: string]: string }>(
+  {},
+  {
+    get: (target, property: string) => {
+      return getColorForString(property);
+    },
+  }
+);

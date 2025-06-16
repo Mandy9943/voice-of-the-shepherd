@@ -20,15 +20,22 @@ export interface JesusCommand {
   hasLocalAudio: boolean;
 }
 
+// Memoized processed commands
+let processedCommands: JesusCommand[] | null = null;
+
 // Process the JSON data to include local asset references
 export function getProcessedCommands(): JesusCommand[] {
-  return commandsJson.map((command) => ({
+  if (processedCommands) {
+    return processedCommands;
+  }
+  processedCommands = commandsJson.map((command) => ({
     ...command,
     localImageAsset: getImageAsset(command.id),
     localAudioAsset: getAudioAsset(command.id),
     hasLocalImage: getImageAsset(command.id) !== getImageAsset("default"),
     hasLocalAudio: hasAudioAsset(command.id),
   }));
+  return processedCommands;
 }
 
 // Get a specific command by ID

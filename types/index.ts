@@ -19,7 +19,7 @@ export interface Category {
 export interface DailyProgress {
   date: string; // YYYY-MM-DD format
   quotesListened: number;
-  completed: boolean; // true if reached 3+ quotes
+  completed: boolean;
 }
 
 export interface StreakData {
@@ -29,4 +29,74 @@ export interface StreakData {
   dailyProgress: DailyProgress[];
   lastCompletedDate: string | null;
   todayProgress: DailyProgress;
+  weeklyStreak: number;
+  monthlyStreak: number;
+  totalQuotesListened: number;
+}
+
+export interface ConfessionEntry {
+  id: string;
+  date: string; // YYYY-MM-DD format
+  spiritualGoals: string[];
+  notes?: string;
+  nextConfessionReminder?: string; // YYYY-MM-DD format
+}
+
+export interface ConfessionData {
+  lastConfessionDate: string | null;
+  entries: ConfessionEntry[];
+  reminderEnabled: boolean;
+  reminderFrequency: "weekly" | "monthly" | "custom"; // How often to remind
+  customReminderDays?: number; // For custom frequency
+}
+
+export interface RescueModeSettings {
+  enabled: boolean;
+  autoPlayAudio: boolean;
+  showBreathingExercise: boolean;
+  blockAppsEnabled: boolean;
+  blockedApps: string[];
+  emergencyContacts: string[];
+  customPrayers: string[];
+  rescueQuoteCategories: string[];
+}
+
+export interface RescueSession {
+  id: string;
+  startTime: string;
+  endTime?: string;
+  duration?: number; // in seconds
+  quotesViewed: string[];
+  prayerCompleted: boolean;
+  breathingExerciseCompleted: boolean;
+  notes?: string;
+}
+
+export interface PersonalInfo {
+  name: string;
+  age?: number;
+  spiritualGoals: string[];
+  hasSignedContract: boolean;
+  signatureDate?: string;
+}
+
+export interface UserProfile {
+  id?: string;
+  name: string;
+  email?: string;
+  age?: number;
+  profilePicture?: string;
+  signInProvider?: "google" | "apple" | "email" | null;
+  isSignedIn: boolean;
+  signInDate?: string;
+  spiritualGoals: string[];
+  hasSignedContract: boolean;
+  signatureDate?: string;
+}
+
+export interface SignInProvider {
+  id: "google" | "apple";
+  name: string;
+  icon: string;
+  color: string;
 }

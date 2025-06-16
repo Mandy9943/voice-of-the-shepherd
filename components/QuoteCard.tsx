@@ -1,7 +1,7 @@
 import { colors } from "@/constants/colors";
 import { typography } from "@/constants/typography";
 import { getImageAsset } from "@/lib/imageAssets";
-import { usePlayerStore } from "@/store/playerStore";
+import { isFavorite, usePlayerStore } from "@/store/playerStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { Quote } from "@/types";
 import { Image } from "expo-image";
@@ -30,11 +30,11 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
   const {
     currentQuote,
     isPlaying,
+    favorites,
     playQuote,
     pauseQuote,
     resumeQuote,
     toggleFavorite,
-    isFavorite,
   } = usePlayerStore();
   const { isDarkMode } = useSettingsStore();
 
