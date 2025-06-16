@@ -55,17 +55,6 @@ export default function QuoteDetailScreen() {
 
   const quote = quotes.find((q) => q.id === id);
 
-  // Auto-navigate when currentQuote changes (for playlist progression)
-  useEffect(() => {
-    if (currentQuote && currentQuote.id !== id && playlist.length > 1) {
-      console.log(
-        `Quote detail screen: Auto-navigating from ${id} to ${currentQuote.id}`
-      );
-      // Navigate to the new quote without adding to history stack
-      router.replace(`/quote/${currentQuote.id}`);
-    }
-  }, [currentQuote?.id, id, playlist.length, router]);
-
   useEffect(() => {
     if (quote?.id) {
       addToHistory(quote.id);
@@ -88,10 +77,11 @@ export default function QuoteDetailScreen() {
   const showPlaylistControls = playlist.length > 1;
 
   const handlePlayPause = () => {
-    if (isCurrentQuote) {
-      isPlaying ? pauseQuote() : resumeQuote();
+    if (isCurrentlyPlaying) {
+      pauseQuote();
+    } else if (isCurrentQuote) {
+      resumeQuote();
     } else {
-      // Start playing this quote with all quotes as playlist
       playQuote(quote, quotes);
     }
   };
@@ -115,17 +105,18 @@ export default function QuoteDetailScreen() {
   };
 
   const handleNext = () => {
-    nextQuote();
+    nextQuote(router);
   };
 
   const handlePrevious = () => {
-    previousQuote();
+    previousQuote(router);
   };
 
   const handlePlayAll = () => {
     // Start playing from this quote with all quotes as playlist
     playQuote(quote, quotes);
   };
+  console.log(currentQuote);
 
   return (
     <View style={styles.container}>

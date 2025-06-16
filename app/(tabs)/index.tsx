@@ -25,20 +25,14 @@ import { useSettingsStore } from "@/store/settingsStore";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { Play, Shield, Shuffle } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const router = useRouter();
   const { isDarkMode, personalInfo } = useSettingsStore();
-  const {
-    streakData,
-    dailyGoal,
-    history,
-    addToHistory,
-    playQuote,
-    resetDailyProgressIfNeeded,
-  } = usePlayerStore();
+  const { streakData, dailyGoal, history, addToHistory, playQuote } =
+    usePlayerStore();
   const insets = useSafeAreaInsets();
 
   const theme = isDarkMode ? colors.dark : colors.light;
@@ -52,11 +46,6 @@ export default function HomeScreen() {
   // Get processed commands with local assets
   const quotes = getProcessedCommands();
 
-  // Reset daily progress if needed when component mounts
-  useEffect(() => {
-    resetDailyProgressIfNeeded();
-  }, []);
-
   // Get a random quote for the daily feature
   const dailyQuote = getRandomCommand();
 
@@ -67,14 +56,12 @@ export default function HomeScreen() {
 
   const handlePlayAll = () => {
     // Start playing from the first quote with all quotes as playlist
-    playQuote(quotes[0], quotes);
-    router.push(`/quote/${quotes[0].id}`);
+    playQuote(quotes[0], quotes, router);
   };
 
   const handlePlayDaily = () => {
     // Play the daily quote
-    playQuote(dailyQuote, quotes);
-    router.push(`/quote/${dailyQuote.id}`);
+    playQuote(dailyQuote, quotes, router);
   };
 
   // Calculate progress

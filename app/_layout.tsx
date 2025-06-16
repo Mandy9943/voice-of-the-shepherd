@@ -1,9 +1,10 @@
 import { AudioProvider } from "@/components/AudioProvider";
 import { colors } from "@/constants/colors";
+import { usePlayerStore } from "@/store/playerStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React from "react";
+import React, { useEffect } from "react";
 import "react-native-gesture-handler";
 
 export default function RootLayout() {
@@ -17,6 +18,11 @@ export default function RootLayout() {
 function RootLayoutNav() {
   const { isDarkMode } = useSettingsStore();
   const theme = isDarkMode ? colors.dark : colors.light;
+  const { resetDailyProgressIfNeeded } = usePlayerStore();
+
+  useEffect(() => {
+    resetDailyProgressIfNeeded();
+  }, []);
 
   return (
     <>

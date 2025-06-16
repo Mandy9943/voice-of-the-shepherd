@@ -30,11 +30,11 @@ interface PlayerState {
   // Actions
   setAudioPlayer: (player: any) => void;
   setBackgroundMusicPlayer: (player: any) => void;
-  playQuote: (quote: Quote, playlist?: Quote[]) => void;
+  playQuote: (quote: Quote, playlist?: Quote[], router?: any) => void;
   pauseQuote: () => void;
   resumeQuote: () => void;
-  nextQuote: () => void;
-  previousQuote: () => void;
+  nextQuote: (router: any) => void;
+  previousQuote: (router: any) => void;
   swipeToNext: () => Quote | null;
   swipeToPrevious: () => Quote | null;
   setTikTokMode: (enabled: boolean) => void;
@@ -102,7 +102,7 @@ export const usePlayerStore = create<PlayerState>()(
       setBackgroundMusicPlayer: (player) =>
         set({ backgroundMusicPlayer: player }),
 
-      playQuote: async (quote, playlist = []) => {
+      playQuote: async (quote, playlist = [], router) => {
         const { audioPlayer } = get();
         const newPlaylist = playlist.length > 0 ? playlist : [quote];
         const index = newPlaylist.findIndex((q) => q.id === quote.id);
@@ -111,6 +111,7 @@ export const usePlayerStore = create<PlayerState>()(
           currentQuote: quote,
           playlist: newPlaylist,
           currentIndex: index >= 0 ? index : 0,
+          isPlaying: true,
         });
 
         if (audioPlayer) {
@@ -120,19 +121,28 @@ export const usePlayerStore = create<PlayerState>()(
             await audioPlayer.play();
           }
         }
+        if (router) {
+          router.push(`/quote/${quote.id}`);
+        }
       },
 
       pauseQuote: () => {
         const { audioPlayer } = get();
-        if (audioPlayer) audioPlayer.pause();
+        if (audioPlayer) {
+          audioPlayer.pause();
+          set({ isPlaying: false });
+        }
       },
 
       resumeQuote: () => {
         const { audioPlayer } = get();
-        if (audioPlayer) audioPlayer.play();
+        if (audioPlayer) {
+          audioPlayer.play();
+          set({ isPlaying: true });
+        }
       },
 
-      nextQuote: async () => {
+      nextQuote: async (router) => {
         const { playlist, currentIndex, audioPlayer } = get();
         if (playlist.length > 0) {
           const nextIndex = (currentIndex + 1) % playlist.length;
@@ -140,6 +150,7 @@ export const usePlayerStore = create<PlayerState>()(
           set({
             currentQuote: nextQuote,
             currentIndex: nextIndex,
+            isPlaying: true,
           });
           if (audioPlayer) {
             const audioAsset = getAudioAsset(nextQuote.id);
@@ -148,10 +159,13 @@ export const usePlayerStore = create<PlayerState>()(
               await audioPlayer.play();
             }
           }
+          if (router) {
+            router.replace(`/quote/${nextQuote.id}`);
+          }
         }
       },
 
-      previousQuote: async () => {
+      previousQuote: async (router) => {
         const { playlist, currentIndex, audioPlayer } = get();
         if (playlist.length > 0) {
           const prevIndex =
@@ -160,6 +174,7 @@ export const usePlayerStore = create<PlayerState>()(
           set({
             currentQuote: prevQuote,
             currentIndex: prevIndex,
+            isPlaying: true,
           });
           if (audioPlayer) {
             const audioAsset = getAudioAsset(prevQuote.id);
@@ -168,13 +183,16 @@ export const usePlayerStore = create<PlayerState>()(
               await audioPlayer.play();
             }
           }
+          if (router) {
+            router.replace(`/quote/${prevQuote.id}`);
+          }
         }
       },
 
       swipeToNext: () => {
         const { isTikTokMode } = get();
         if (isTikTokMode) {
-          get().nextQuote();
+          get().nextQuote(null);
           return get().currentQuote;
         }
         return null;
@@ -183,7 +201,7 @@ export const usePlayerStore = create<PlayerState>()(
       swipeToPrevious: () => {
         const { isTikTokMode } = get();
         if (isTikTokMode) {
-          get().previousQuote();
+          get().previousQuote(null);
           return get().currentQuote;
         }
         return null;
