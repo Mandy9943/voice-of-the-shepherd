@@ -10,23 +10,17 @@ import { useRouter } from "expo-router";
 import {
   AlertTriangle,
   Bell,
-  Edit3,
-  FileText,
   Heart,
-  LogIn,
-  LogOut,
   Moon,
   Music,
   Shield,
   Sun,
   Target,
-  User,
 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
   DevSettings,
-  Image,
   Platform,
   ScrollView,
   StyleSheet,
@@ -113,25 +107,6 @@ export default function SettingsScreen() {
     }
 
     await toggleDailyNotifications();
-  };
-
-  const handleResetOnboarding = () => {
-    Alert.alert(
-      "Reset Onboarding",
-      "This will show the welcome tutorial again when you restart the app. Continue?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Reset",
-          style: "destructive",
-          onPress: () => {
-            resetOnboarding();
-            // Navigate to onboarding immediately
-            router.push("/onboarding/welcome");
-          },
-        },
-      ]
-    );
   };
 
   const handleResetApp = () => {
@@ -272,184 +247,6 @@ export default function SettingsScreen() {
         <Text style={[styles.subtitle, { color: theme.secondary }]}>
           Customize your spiritual journey
         </Text>
-      </View>
-
-      {/* User Profile Section */}
-      <View style={[styles.section, { borderBottomColor: theme.border }]}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>
-          Profile
-        </Text>
-
-        {userProfile.isSignedIn ? (
-          <View style={styles.profileContainer}>
-            <View style={styles.profileHeader}>
-              <View style={styles.profileImageContainer}>
-                {userProfile.profilePicture ? (
-                  <Image
-                    source={{ uri: userProfile.profilePicture }}
-                    style={styles.profileImage}
-                  />
-                ) : (
-                  <View
-                    style={[
-                      styles.profileImagePlaceholder,
-                      { backgroundColor: theme.primary },
-                    ]}
-                  >
-                    <User size={32} color="#FFFFFF" />
-                  </View>
-                )}
-              </View>
-
-              <View style={styles.profileInfo}>
-                <Text style={[styles.profileName, { color: theme.text }]}>
-                  {displayName || "User"}
-                </Text>
-                {userProfile.email && (
-                  <Text
-                    style={[styles.profileEmail, { color: theme.secondary }]}
-                  >
-                    {userProfile.email}
-                  </Text>
-                )}
-                {displayAge && (
-                  <Text style={[styles.profileAge, { color: theme.secondary }]}>
-                    Age: {displayAge}
-                  </Text>
-                )}
-                <View style={styles.providerBadge}>
-                  <Text style={styles.providerText}>
-                    {userProfile.signInProvider === "google"
-                      ? "🔍 Google"
-                      : "🍎 Apple"}
-                  </Text>
-                </View>
-              </View>
-
-              <TouchableOpacity
-                style={styles.editButton}
-                onPress={handleEditProfile}
-                activeOpacity={0.7}
-              >
-                <Edit3 size={16} color={theme.secondary} />
-              </TouchableOpacity>
-            </View>
-
-            {/* Spiritual Commitments */}
-            {hasCommitments && (
-              <TouchableOpacity
-                style={[
-                  styles.commitmentsContainer,
-                  { backgroundColor: theme.card, borderColor: theme.border },
-                ]}
-                onPress={() => setShowCommitmentModal(true)}
-                activeOpacity={0.8}
-              >
-                <View style={styles.commitmentsHeader}>
-                  <FileText size={20} color={theme.primary} />
-                  <Text
-                    style={[styles.commitmentsTitle, { color: theme.text }]}
-                  >
-                    Your Spiritual Contract
-                  </Text>
-                </View>
-
-                <Text
-                  style={[
-                    styles.commitmentsSubtitle,
-                    { color: theme.secondary },
-                  ]}
-                >
-                  Tap to view your commitments and signature
-                </Text>
-
-                {(userProfile.signatureDate || personalInfo.signatureDate) && (
-                  <Text
-                    style={[styles.signatureDate, { color: theme.secondary }]}
-                  >
-                    ✍️ Signed on{" "}
-                    {new Date(
-                      userProfile.signatureDate || personalInfo.signatureDate!
-                    ).toLocaleDateString()}
-                  </Text>
-                )}
-              </TouchableOpacity>
-            )}
-
-            <TouchableOpacity
-              style={styles.signOutButton}
-              onPress={handleSignOut}
-              activeOpacity={0.7}
-            >
-              <LogOut size={16} color={theme.secondary} />
-              <Text style={[styles.signOutText, { color: theme.secondary }]}>
-                Sign Out
-              </Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={styles.signInContainer}>
-            {displayName && (
-              <View style={styles.localProfileInfo}>
-                <Text style={[styles.localProfileName, { color: theme.text }]}>
-                  Welcome, {displayName}!
-                </Text>
-                {displayAge && (
-                  <Text
-                    style={[styles.localProfileAge, { color: theme.secondary }]}
-                  >
-                    Age: {displayAge}
-                  </Text>
-                )}
-                {hasCommitments && (
-                  <TouchableOpacity
-                    style={styles.viewContractButton}
-                    onPress={() => setShowCommitmentModal(true)}
-                    activeOpacity={0.7}
-                  >
-                    <FileText size={16} color={theme.primary} />
-                    <Text
-                      style={[
-                        styles.viewContractText,
-                        { color: theme.primary },
-                      ]}
-                    >
-                      View Your Contract
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            )}
-
-            <Text
-              style={[styles.signInDescription, { color: theme.secondary }]}
-            >
-              Sign in to sync your progress across devices and backup your
-              spiritual journey.
-            </Text>
-
-            {signInProviders.map((provider) => (
-              <TouchableOpacity
-                key={provider.id}
-                style={[
-                  styles.signInButton,
-                  {
-                    backgroundColor: theme.card,
-                    borderColor: theme.border,
-                  },
-                ]}
-                onPress={() => handleSignIn(provider.id)}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.providerIcon}>{provider.icon}</Text>
-                <Text style={[styles.signInButtonText, { color: theme.text }]}>
-                  {provider.name}
-                </Text>
-                <LogIn size={16} color={theme.secondary} />
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
       </View>
 
       <View style={[styles.section, { borderBottomColor: theme.border }]}>

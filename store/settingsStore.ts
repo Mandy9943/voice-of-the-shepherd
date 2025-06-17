@@ -408,13 +408,27 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: "settings-storage",
       storage: createJSONStorage(() => AsyncStorage),
-      onRehydrateStorage: () => (state) => {
+      onRehydrateStorage: () => async (state) => {
         // Schedule notifications if they're enabled when the app loads
         if (state?.dailyNotifications && state?.notificationTimes) {
-          console.log("Rehydrating notifications...");
-          NotificationService.scheduleCustomNotifications(
-            state.notificationTimes
-          );
+          const scheduled =
+            await NotificationService.getScheduledNotifications();
+          const enabledInStore = state.notificationTimes.filter(
+            (t) => t.enabled
+          ).length;
+
+          if (scheduled.length !== enabledInStore) {
+            console.log(
+              `Mismatch detected. Scheduled: ${scheduled.length}, Enabled in store: ${enabledInStore}. Rescheduling...`
+            );
+            await NotificationService.scheduleCustomNotifications(
+              state.notificationTimes
+            );
+          } else {
+            console.log(
+              "Notifications are in sync. Skipping reschedule on load."
+            );
+          }
         }
       },
     }
