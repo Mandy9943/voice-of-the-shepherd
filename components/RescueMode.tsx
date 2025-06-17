@@ -15,7 +15,6 @@ import {
 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
-  Dimensions,
   Linking,
   Modal,
   ScrollView,
@@ -51,11 +50,6 @@ export default function RescueMode({ visible, onClose }: RescueModeProps) {
   const theme = isDarkMode ? colors.dark : colors.light;
 
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
-  const [showBreathing, setShowBreathing] = useState(false);
-  const [breathingCount, setBreathingCount] = useState(4);
-  const [breathingPhase, setBreathingPhase] = useState<
-    "inhale" | "hold" | "exhale" | "pause"
-  >("inhale");
 
   // Get all quotes and filter them based on rescue categories
   const allQuotes = getProcessedCommands();
@@ -84,35 +78,6 @@ export default function RescueMode({ visible, onClose }: RescueModeProps) {
     }
   }, [currentQuote]);
 
-  useEffect(() => {
-    if (!showBreathing) return;
-
-    const timer = setInterval(() => {
-      setBreathingCount((prev) => {
-        if (prev <= 1) {
-          setBreathingPhase((current) => {
-            switch (current) {
-              case "inhale":
-                return "hold";
-              case "hold":
-                return "exhale";
-              case "exhale":
-                return "pause";
-              case "pause":
-                return "inhale";
-              default:
-                return "inhale";
-            }
-          });
-          return 4;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [showBreathing]);
-
   const handleNextQuote = () => {
     if (quotesToUse.length > 0) {
       const nextIndex = (currentQuoteIndex + 1) % quotesToUse.length;
@@ -131,36 +96,6 @@ export default function RescueMode({ visible, onClose }: RescueModeProps) {
     Linking.openURL(`tel:${contact}`).catch((err) =>
       console.error("Failed to open phone app:", err)
     );
-  };
-
-  const getBreathingInstruction = () => {
-    switch (breathingPhase) {
-      case "inhale":
-        return "Breathe in slowly";
-      case "hold":
-        return "Hold your breath";
-      case "exhale":
-        return "Breathe out slowly";
-      case "pause":
-        return "Rest and pause";
-      default:
-        return "Breathe naturally";
-    }
-  };
-
-  const getBreathingColor = () => {
-    switch (breathingPhase) {
-      case "inhale":
-        return "#10B981";
-      case "hold":
-        return "#F59E0B";
-      case "exhale":
-        return "#3B82F6";
-      case "pause":
-        return "#8B5CF6";
-      default:
-        return theme.primary;
-    }
   };
 
   if (!visible) return null;
@@ -196,71 +131,6 @@ export default function RescueMode({ visible, onClose }: RescueModeProps) {
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {/* Breathing Exercise */}
-          {rescueModeSettings.showBreathingExercise && (
-            <View style={[styles.section, { backgroundColor: theme.card }]}>
-              <Text style={[styles.sectionTitle, { color: theme.text }]}>
-                Breathing Exercise
-              </Text>
-
-              {!showBreathing ? (
-                <TouchableOpacity
-                  style={[
-                    styles.breathingButton,
-                    { backgroundColor: theme.rescue?.success || theme.primary },
-                  ]}
-                  onPress={() => setShowBreathing(true)}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.breathingButtonText}>
-                    Start Breathing Exercise
-                  </Text>
-                </TouchableOpacity>
-              ) : (
-                <View style={styles.breathingContainer}>
-                  <View
-                    style={[
-                      styles.breathingCircle,
-                      {
-                        backgroundColor: getBreathingColor(),
-                        transform: [
-                          {
-                            scale:
-                              breathingPhase === "inhale" ||
-                              breathingPhase === "hold"
-                                ? 1.2
-                                : 0.8,
-                          },
-                        ],
-                      },
-                    ]}
-                  >
-                    <Text style={styles.breathingCount}>{breathingCount}</Text>
-                  </View>
-                  <Text
-                    style={[styles.breathingInstruction, { color: theme.text }]}
-                  >
-                    {getBreathingInstruction()}
-                  </Text>
-                  <TouchableOpacity
-                    style={styles.stopBreathingButton}
-                    onPress={() => setShowBreathing(false)}
-                    activeOpacity={0.7}
-                  >
-                    <Text
-                      style={[
-                        styles.stopBreathingText,
-                        { color: theme.secondary },
-                      ]}
-                    >
-                      Stop Exercise
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-          )}
-
           {/* Spiritual Quote */}
           {currentQuote && (
             <View style={[styles.section, { backgroundColor: theme.card }]}>
@@ -395,8 +265,6 @@ export default function RescueMode({ visible, onClose }: RescueModeProps) {
     </Modal>
   );
 }
-
-const { width } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {

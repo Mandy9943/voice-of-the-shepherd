@@ -5,7 +5,13 @@ import { useSettingsStore } from "@/store/settingsStore";
 import { useRouter } from "expo-router";
 import { ArrowRight, Check, Target } from "lucide-react-native";
 import React, { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function GoalsScreen() {
@@ -43,7 +49,7 @@ export default function GoalsScreen() {
         },
       ]}
     >
-      <View style={styles.content}>
+      <ScrollView style={styles.content}>
         <View style={styles.header}>
           <View
             style={[
@@ -144,7 +150,7 @@ export default function GoalsScreen() {
             />
           </View>
         </View>
-      </View>
+      </ScrollView>
 
       <View style={styles.footer}>
         <TouchableOpacity
@@ -207,9 +213,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
-  goalContent: {
-    flex: 1,
-  },
+  goalContent: {},
   goalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
