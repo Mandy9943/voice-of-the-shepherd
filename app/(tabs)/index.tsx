@@ -31,8 +31,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function HomeScreen() {
   const router = useRouter();
   const { isDarkMode, personalInfo } = useSettingsStore();
-  const { streakData, dailyGoal, history, addToHistory, playQuote } =
-    usePlayerStore();
+  const { addToHistory, playQuote } = usePlayerStore();
   const insets = useSafeAreaInsets();
 
   const theme = isDarkMode ? colors.dark : colors.light;
@@ -63,10 +62,6 @@ export default function HomeScreen() {
     // Play the daily quote
     playQuote(dailyQuote, quotes, router);
   };
-
-  // Calculate progress
-  const todayProgress = streakData.todayProgress.quotesListened;
-  const progressPercentage = Math.min((todayProgress / dailyGoal) * 100, 100);
 
   // Get today's featured quotes
   const featuredQuotes = quotes.slice(0, 3);
