@@ -1,6 +1,6 @@
 import { usePlayerStore } from "@/store/playerStore";
 import { useSettingsStore } from "@/store/settingsStore";
-import { useAudioPlayer } from "expo-audio";
+import { AudioModule, useAudioPlayer } from "expo-audio";
 import React, { useEffect, useRef } from "react";
 
 interface AudioProviderProps {
@@ -25,6 +25,21 @@ export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
   const wasPlayingForTransitionRef = useRef(false);
   const isTransitioningRef = useRef(false);
   const hasActivePlaylistRef = useRef(false);
+
+  useEffect(() => {
+    const setAudioMode = async () => {
+      try {
+        await AudioModule.setAudioModeAsync({
+          shouldPlayInBackground: true,
+          playsInSilentMode: true,
+        });
+        console.log("Audio mode set for background playback");
+      } catch (e) {
+        console.error("Failed to set audio mode", e);
+      }
+    };
+    setAudioMode();
+  }, []);
 
   useEffect(() => {
     console.log(
