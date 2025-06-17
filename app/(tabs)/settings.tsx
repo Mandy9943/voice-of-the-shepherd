@@ -214,7 +214,7 @@ export default function SettingsScreen() {
   };
 
   const handleDonation = () => {
-    router.push("https://voice-of-the-shepherd.com/donation");
+    router.push("https://donate.stripe.com/6oU5kCdF83Qy4MJd6w9oc00");
   };
 
   const enabledNotificationTimes = notificationTimes.filter((t) => t.enabled);
@@ -600,28 +600,35 @@ export default function SettingsScreen() {
             </View>
 
             <View style={styles.supportTextContainer}>
-              <Text style={styles.supportTitle}>Pledge Your Support</Text>
               <Text style={styles.supportDescription}>
-                Help us keep this app free. Your support makes a real difference
-                in bringing God&apos;s word to more hearts.
+                If you find this app useful, please consider supporting us with
+                a donation. Every bit helps! Your support makes a real
+                difference in bringing God&apos;s word to more people.
               </Text>
 
-              <View style={styles.supportFeatures}>
-                <Text style={styles.supportFeature}>• Keep the app free</Text>
-                <Text style={styles.supportFeature}>
-                  • Help us reach more people
-                </Text>
-                <Text style={styles.supportFeature}>
-                  • Add more teachings and categories
-                </Text>
-                <Text style={styles.supportFeature}>
-                  • Improve audio quality and features
-                </Text>
-              </View>
+              <Text style={styles.roadmapTitle}>Roadmap:</Text>
 
-              <View style={styles.supportCta}>
-                <Text style={styles.supportCtaText}>
-                  Every contribution counts 🙏
+              <View style={styles.supportFeatures}>
+                <Text style={styles.supportFeature}>
+                  Help us reach more people
+                </Text>
+                <Text style={styles.supportFeature}>
+                  Add more teachings and categories
+                </Text>
+                <Text style={styles.supportFeature}>
+                  Improve audio quality and features
+                </Text>
+                <Text style={styles.supportFeature}>
+                  Add Confession Tracker
+                </Text>
+                <Text style={styles.supportFeature}>
+                  Build Temptation Rescue Mode
+                </Text>
+                <Text style={styles.supportFeature}>
+                  Send Grace to friends/family
+                </Text>
+                <Text style={styles.supportFeature}>
+                  Find a Shepherd near you
                 </Text>
               </View>
 
@@ -881,20 +888,19 @@ const styles = StyleSheet.create({
   supportTextContainer: {
     alignItems: "center",
   },
-  supportTitle: {
-    color: "#FFFFFF",
-    fontSize: typography.sizes.xxl,
-    fontWeight: "700",
-    marginBottom: 16,
-    textAlign: "center",
-    fontFamily: typography.quoteFont,
-  },
   supportDescription: {
     color: "rgba(255,255,255,0.95)",
     fontSize: typography.sizes.md,
     lineHeight: typography.sizes.md * 1.6,
     marginBottom: 24,
     textAlign: "center",
+  },
+  roadmapTitle: {
+    color: "#FFFFFF",
+    fontSize: typography.sizes.lg,
+    fontWeight: "600",
+    textAlign: "center",
+    marginBottom: 16,
   },
   supportFeatures: {
     alignSelf: "stretch",
@@ -906,15 +912,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontWeight: "500",
     textAlign: "center",
-  },
-  supportCta: {
-    marginBottom: 20,
-    alignItems: "center",
-  },
-  supportCtaText: {
-    color: "#FFFFFF",
-    fontSize: typography.sizes.lg,
-    fontWeight: "600",
   },
   donateButton: {
     backgroundColor: "rgba(255,255,255,0.2)",
