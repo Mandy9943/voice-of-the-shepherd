@@ -44,7 +44,7 @@ interface SettingsState {
 
   // Personal Info Actions
   updatePersonalInfo: (info: Partial<PersonalInfo>) => void;
-  signContract: () => void;
+  signContract: (signature: string) => void;
 
   // User Profile Actions
   updateUserProfile: (profile: Partial<UserProfile>) => void;
@@ -110,6 +110,7 @@ const initialPersonalInfo: PersonalInfo = {
   spiritualGoals: [],
   hasSignedContract: false,
   signatureDate: undefined,
+  signature: undefined,
 };
 
 const initialUserProfile: UserProfile = {
@@ -123,6 +124,7 @@ const initialUserProfile: UserProfile = {
   spiritualGoals: [],
   hasSignedContract: false,
   signatureDate: undefined,
+  signature: undefined,
 };
 
 const initialState = {
@@ -258,7 +260,7 @@ export const useSettingsStore = create<SettingsState>()(
       },
 
       // Personal Info Actions
-      updatePersonalInfo: (info) => {
+      updatePersonalInfo: (info: Partial<PersonalInfo>) => {
         set((state) => ({
           personalInfo: {
             ...state.personalInfo,
@@ -267,12 +269,20 @@ export const useSettingsStore = create<SettingsState>()(
         }));
       },
 
-      signContract: () => {
+      signContract: (signature: string) => {
+        const signatureDate = new Date().toISOString();
         set((state) => ({
           personalInfo: {
             ...state.personalInfo,
             hasSignedContract: true,
-            signatureDate: new Date().toISOString(),
+            signatureDate,
+            signature,
+          },
+          userProfile: {
+            ...state.userProfile,
+            hasSignedContract: true,
+            signatureDate,
+            signature,
           },
         }));
       },
@@ -307,6 +317,7 @@ export const useSettingsStore = create<SettingsState>()(
             spiritualGoals: get().userProfile.spiritualGoals,
             hasSignedContract: get().userProfile.hasSignedContract,
             signatureDate: get().userProfile.signatureDate,
+            signature: get().userProfile.signature,
           },
         });
       },

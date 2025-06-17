@@ -10,14 +10,17 @@ import { useRouter } from "expo-router";
 import {
   AlertTriangle,
   Bell,
+  Edit3,
+  FileText,
   Heart,
+  LogOut,
   Moon,
   Music,
   Shield,
   Sun,
   Target,
 } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Alert,
   DevSettings,
@@ -45,43 +48,16 @@ export default function SettingsScreen() {
     toggleBackgroundMusic,
     toggleDailyNotifications,
     toggleRescueMode,
-    resetOnboarding,
-    signInUser,
+
     signOutUser,
     updateUserProfile,
   } = useSettingsStore();
 
   const { dailyGoal, setDailyGoal } = usePlayerStore();
   const insets = useSafeAreaInsets();
-  const [notificationCount, setNotificationCount] = useState(0);
   const [showCommitmentModal, setShowCommitmentModal] = useState(false);
 
   const theme = isDarkMode ? colors.dark : colors.light;
-
-  const signInProviders = [
-    {
-      id: "google" as const,
-      name: "Continue with Google",
-      icon: "🔍",
-      color: "#4285F4",
-    },
-    {
-      id: "apple" as const,
-      name: "Continue with Apple",
-      icon: "🍎",
-      color: "#000000",
-    },
-  ];
-
-  useEffect(() => {
-    // Check scheduled notifications count
-    const checkNotifications = async () => {
-      const scheduled = await NotificationService.getScheduledNotifications();
-      setNotificationCount(scheduled.length);
-    };
-
-    checkNotifications();
-  }, [dailyNotifications, notificationTimes]);
 
   const handleNotificationToggle = async () => {
     if (Platform.OS === "web") {
@@ -148,26 +124,6 @@ export default function SettingsScreen() {
       { text: "15 teachings", onPress: () => setDailyGoal(15) },
       { text: "20 teachings", onPress: () => setDailyGoal(20) },
     ]);
-  };
-
-  const handleSignIn = (provider: "google" | "apple") => {
-    // Mock sign-in for now
-    // const mockUserData = {
-    //   id: `${provider}_${Date.now()}`,
-    //   name: provider === 'google' ? 'John Doe' : 'Jane Smith',
-    //   email: provider === 'google' ? 'john@gmail.com' : 'jane@icloud.com',
-    //   profilePicture: `https://ui-avatars.com/api/?name=${provider === 'google' ? 'John+Doe' : 'Jane+Smith'}&background=random`,
-    //   age: personalInfo.age, // Keep age from onboarding
-    //   spiritualGoals: personalInfo.spiritualGoals, // Keep goals from onboarding
-    //   hasSignedContract: personalInfo.hasSignedContract,
-    //   signatureDate: personalInfo.signatureDate,
-    // };
-    // signInUser(provider, mockUserData);
-    // Alert.alert(
-    //   'Sign In Successful',
-    //   `Welcome ${mockUserData.name}! You are now signed in with ${provider === 'google' ? 'Google' : 'Apple'}.`,
-    //   [{ text: 'OK' }]
-    // );
   };
 
   const handleSignOut = () => {
@@ -247,6 +203,136 @@ export default function SettingsScreen() {
         <Text style={[styles.subtitle, { color: theme.secondary }]}>
           Customize your spiritual journey
         </Text>
+      </View>
+      <View style={[styles.section, { borderBottomColor: theme.border }]}>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>
+          Profile
+        </Text>
+
+        {userProfile.isSignedIn ? (
+          <View style={styles.profileContainer}>
+            <View style={styles.profileHeader}>
+              <View style={styles.profileInfo}>
+                <Text style={[styles.profileName, { color: theme.text }]}>
+                  {displayName || "User"}
+                </Text>
+                {userProfile.email && (
+                  <Text
+                    style={[styles.profileEmail, { color: theme.secondary }]}
+                  >
+                    {userProfile.email}
+                  </Text>
+                )}
+                {displayAge && (
+                  <Text style={[styles.profileAge, { color: theme.secondary }]}>
+                    Age: {displayAge}
+                  </Text>
+                )}
+                <View style={styles.providerBadge}>
+                  <Text style={styles.providerText}>
+                    {userProfile.signInProvider === "google"
+                      ? "🔍 Google"
+                      : "🍎 Apple"}
+                  </Text>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={handleEditProfile}
+                activeOpacity={0.7}
+              >
+                <Edit3 size={16} color={theme.secondary} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Spiritual Commitments */}
+            {hasCommitments && (
+              <TouchableOpacity
+                style={[
+                  styles.commitmentsContainer,
+                  { backgroundColor: theme.card, borderColor: theme.border },
+                ]}
+                onPress={() => setShowCommitmentModal(true)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.commitmentsHeader}>
+                  <FileText size={20} color={theme.primary} />
+                  <Text
+                    style={[styles.commitmentsTitle, { color: theme.text }]}
+                  >
+                    Your Spiritual Contract
+                  </Text>
+                </View>
+
+                <Text
+                  style={[
+                    styles.commitmentsSubtitle,
+                    { color: theme.secondary },
+                  ]}
+                >
+                  Tap to view your commitments and signature
+                </Text>
+
+                {(userProfile.signatureDate || personalInfo.signatureDate) && (
+                  <Text
+                    style={[styles.signatureDate, { color: theme.secondary }]}
+                  >
+                    ✍️ Signed on{" "}
+                    {new Date(
+                      userProfile.signatureDate || personalInfo.signatureDate!
+                    ).toLocaleDateString()}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity
+              style={styles.signOutButton}
+              onPress={handleSignOut}
+              activeOpacity={0.7}
+            >
+              <LogOut size={16} color={theme.secondary} />
+              <Text style={[styles.signOutText, { color: theme.secondary }]}>
+                Sign Out
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.signInContainer}>
+            {displayName && (
+              <View style={styles.localProfileInfo}>
+                <Text style={[styles.localProfileName, { color: theme.text }]}>
+                  Welcome, {displayName}!
+                </Text>
+                {displayAge && (
+                  <Text
+                    style={[styles.localProfileAge, { color: theme.secondary }]}
+                  >
+                    Age: {displayAge}
+                  </Text>
+                )}
+                {hasCommitments && (
+                  <TouchableOpacity
+                    style={styles.viewContractButton}
+                    onPress={() => setShowCommitmentModal(true)}
+                    activeOpacity={0.7}
+                  >
+                    <FileText size={16} color={theme.primary} />
+                    <Text
+                      style={[
+                        styles.viewContractText,
+                        { color: theme.primary },
+                      ]}
+                    >
+                      View Your Contract
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+        )}
       </View>
 
       <View style={[styles.section, { borderBottomColor: theme.border }]}>

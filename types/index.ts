@@ -97,6 +97,7 @@ export interface PersonalInfo {
   spiritualGoals: string[];
   hasSignedContract: boolean;
   signatureDate?: string;
+  signature?: string;
 }
 
 export interface UserProfile {
@@ -111,6 +112,7 @@ export interface UserProfile {
   spiritualGoals: string[];
   hasSignedContract: boolean;
   signatureDate?: string;
+  signature?: string;
 }
 
 export interface SignInProvider {

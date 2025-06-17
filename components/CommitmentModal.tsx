@@ -4,6 +4,7 @@ import { useSettingsStore } from "@/store/settingsStore";
 import { Check, PenTool, X } from "lucide-react-native";
 import React from "react";
 import {
+  Image,
   Modal,
   ScrollView,
   StyleSheet,
@@ -30,6 +31,7 @@ export default function CommitmentModal({
     userProfile.spiritualGoals.length > 0
       ? userProfile.spiritualGoals
       : personalInfo.spiritualGoals;
+  const signature = userProfile.signature || personalInfo.signature;
 
   return (
     <Modal
@@ -161,25 +163,32 @@ export default function CommitmentModal({
             )}
           </View>
 
-          <View
-            style={[
-              styles.reminderContainer,
-              { backgroundColor: theme.card, borderColor: theme.border },
-            ]}
-          >
-            <Text style={[styles.reminderTitle, { color: theme.text }]}>
-              Daily Reminder
-            </Text>
-            <Text style={[styles.reminderText, { color: theme.secondary }]}>
-              &quot;Commit to the Lord whatever you do, and he will establish
-              your plans.&quot;
-            </Text>
-            <Text
-              style={[styles.reminderReference, { color: theme.secondary }]}
+          {signature && (
+            <View
+              style={[
+                styles.signatureDisplayContainer,
+                { backgroundColor: theme.card, borderColor: theme.border },
+              ]}
             >
-              - Proverbs 16:3
-            </Text>
-          </View>
+              <Text
+                style={[styles.signatureDisplayTitle, { color: theme.text }]}
+              >
+                Your Signature
+              </Text>
+              <View
+                style={[
+                  styles.signatureArea,
+                  { backgroundColor: theme.background },
+                ]}
+              >
+                <Image
+                  source={{ uri: signature }}
+                  style={styles.signatureImage}
+                  resizeMode="contain"
+                />
+              </View>
+            </View>
+          )}
         </ScrollView>
 
         <View style={styles.footer}>
@@ -292,28 +301,29 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     textAlign: "center",
   },
-  reminderContainer: {
+  signatureDisplayContainer: {
     padding: 20,
     borderRadius: 16,
     borderWidth: 1,
     marginBottom: 20,
     alignItems: "center",
   },
-  reminderTitle: {
+  signatureDisplayTitle: {
     fontSize: typography.sizes.lg,
     fontWeight: "600",
     marginBottom: 12,
   },
-  reminderText: {
-    fontSize: typography.sizes.md,
-    fontStyle: "italic",
-    textAlign: "center",
-    lineHeight: typography.sizes.md * 1.4,
-    marginBottom: 8,
+  signatureArea: {
+    height: 150,
+    width: "100%",
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
   },
-  reminderReference: {
-    fontSize: typography.sizes.sm,
-    fontWeight: "600",
+  signatureImage: {
+    width: "100%",
+    height: "100%",
   },
   footer: {
     paddingHorizontal: 20,
