@@ -21,6 +21,7 @@ import { Image } from "expo-image";
 import { ActionModal } from "@/components/ActionModal";
 import ConfessionTracker from "@/components/ConfessionTracker";
 import { CongratulationsModal } from "@/components/CongratulationsModal";
+import { MiniPlayer } from "@/components/MiniPlayer";
 import { QuoteCard } from "@/components/QuoteCard";
 import RescueMode from "@/components/RescueMode";
 import { StreakProgress } from "@/components/StreakProgress";
@@ -315,6 +316,7 @@ export default function HomeScreen() {
         ctaText="Donate Now"
         onCtaPress={handleDonate}
       />
+      <MiniPlayer />
     </View>
   );
 }
