@@ -1,11 +1,5 @@
 import { NotificationService } from "@/services/notificationService";
-import {
-  ConfessionData,
-  ConfessionEntry,
-  PersonalInfo,
-  RescueModeSettings,
-  UserProfile,
-} from "@/types";
+import { PersonalInfo, RescueModeSettings, UserProfile } from "@/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -25,7 +19,6 @@ interface SettingsState {
   notificationTimes: NotificationTime[];
   hasCompletedOnboarding: boolean;
   showTutorialOverlays: boolean;
-  confessionData: ConfessionData;
   rescueModeSettings: RescueModeSettings;
   personalInfo: PersonalInfo;
   userProfile: UserProfile;
@@ -47,6 +40,7 @@ interface SettingsState {
   completeOnboarding: () => void;
   resetOnboarding: () => void;
   dismissTutorialOverlays: () => void;
+  resetApp: () => Promise<void>;
 
   // Personal Info Actions
   updatePersonalInfo: (info: Partial<PersonalInfo>) => void;
@@ -59,17 +53,6 @@ interface SettingsState {
     userData: Partial<UserProfile>
   ) => void;
   signOutUser: () => void;
-
-  // Confession Actions
-  addConfessionEntry: (spiritualGoals: string[], notes?: string) => void;
-  updateConfessionReminder: (
-    enabled: boolean,
-    frequency: "weekly" | "monthly" | "custom",
-    customDays?: number
-  ) => void;
-  getLastConfessionDate: () => string | null;
-  getDaysSinceLastConfession: () => number | null;
-  getUpcomingConfessionReminder: () => string | null;
 
   // Rescue Mode Actions
   updateRescueModeSettings: (settings: Partial<RescueModeSettings>) => void;
@@ -105,14 +88,6 @@ const defaultNotificationTimes: NotificationTime[] = [
     enabled: true,
   },
 ];
-
-const initialConfessionData: ConfessionData = {
-  lastConfessionDate: null,
-  entries: [],
-  reminderEnabled: false,
-  reminderFrequency: "monthly",
-  customReminderDays: 30,
-};
 
 const initialRescueModeSettings: RescueModeSettings = {
   enabled: true,
@@ -150,19 +125,22 @@ const initialUserProfile: UserProfile = {
   signatureDate: undefined,
 };
 
+const initialState = {
+  isDarkMode: false,
+  enableBackgroundMusic: false,
+  dailyNotifications: true,
+  notificationTimes: defaultNotificationTimes,
+  hasCompletedOnboarding: false,
+  showTutorialOverlays: true,
+  rescueModeSettings: initialRescueModeSettings,
+  personalInfo: initialPersonalInfo,
+  userProfile: initialUserProfile,
+};
+
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set, get) => ({
-      isDarkMode: false,
-      enableBackgroundMusic: false,
-      dailyNotifications: true,
-      notificationTimes: defaultNotificationTimes,
-      hasCompletedOnboarding: false,
-      showTutorialOverlays: true,
-      confessionData: initialConfessionData,
-      rescueModeSettings: initialRescueModeSettings,
-      personalInfo: initialPersonalInfo,
-      userProfile: initialUserProfile,
+      ...initialState,
 
       toggleDarkMode: () => set((state) => ({ isDarkMode: !state.isDarkMode })),
 
@@ -264,6 +242,21 @@ export const useSettingsStore = create<SettingsState>()(
         set({ showTutorialOverlays: false });
       },
 
+      resetApp: async () => {
+        await AsyncStorage.clear();
+        set({
+          isDarkMode: false,
+          enableBackgroundMusic: false,
+          dailyNotifications: true,
+          notificationTimes: defaultNotificationTimes,
+          hasCompletedOnboarding: false,
+          showTutorialOverlays: true,
+          rescueModeSettings: initialRescueModeSettings,
+          personalInfo: initialPersonalInfo,
+          userProfile: initialUserProfile,
+        });
+      },
+
       // Personal Info Actions
       updatePersonalInfo: (info) => {
         set((state) => ({
@@ -316,86 +309,6 @@ export const useSettingsStore = create<SettingsState>()(
             signatureDate: get().userProfile.signatureDate,
           },
         });
-      },
-
-      // Confession Actions
-      addConfessionEntry: (spiritualGoals, notes) => {
-        const today = new Date().toISOString().split("T")[0];
-        const newEntry: ConfessionEntry = {
-          id: Date.now().toString(),
-          date: today,
-          spiritualGoals,
-          notes,
-        };
-
-        const { confessionData } = get();
-        const updatedData: ConfessionData = {
-          ...confessionData,
-          lastConfessionDate: today,
-          entries: [newEntry, ...confessionData.entries].slice(0, 20), // Keep last 20 entries
-        };
-
-        set({ confessionData: updatedData });
-      },
-
-      updateConfessionReminder: (enabled, frequency, customDays) => {
-        const { confessionData } = get();
-        const updatedData: ConfessionData = {
-          ...confessionData,
-          reminderEnabled: enabled,
-          reminderFrequency: frequency,
-          customReminderDays: customDays,
-        };
-
-        set({ confessionData: updatedData });
-      },
-
-      getLastConfessionDate: () => {
-        return get().confessionData.lastConfessionDate;
-      },
-
-      getDaysSinceLastConfession: () => {
-        const lastDate = get().confessionData.lastConfessionDate;
-        if (!lastDate) return null;
-
-        const today = new Date();
-        const confessionDate = new Date(lastDate);
-        const diffTime = Math.abs(today.getTime() - confessionDate.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        return diffDays;
-      },
-
-      getUpcomingConfessionReminder: () => {
-        const { confessionData } = get();
-        if (
-          !confessionData.reminderEnabled ||
-          !confessionData.lastConfessionDate
-        ) {
-          return null;
-        }
-
-        const lastDate = new Date(confessionData.lastConfessionDate);
-        let reminderDays: number;
-
-        switch (confessionData.reminderFrequency) {
-          case "weekly":
-            reminderDays = 7;
-            break;
-          case "monthly":
-            reminderDays = 30;
-            break;
-          case "custom":
-            reminderDays = confessionData.customReminderDays || 30;
-            break;
-          default:
-            reminderDays = 30;
-        }
-
-        const reminderDate = new Date(lastDate);
-        reminderDate.setDate(reminderDate.getDate() + reminderDays);
-
-        return reminderDate.toISOString().split("T")[0];
       },
 
       // Rescue Mode Actions

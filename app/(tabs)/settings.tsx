@@ -3,10 +3,12 @@ import { NotificationTimeManager } from "@/components/NotificationTimeManager";
 import { colors } from "@/constants/colors";
 import { typography } from "@/constants/typography";
 import { NotificationService } from "@/services/notificationService";
+import { useConfessionStore } from "@/store/confessionStore";
 import { usePlayerStore } from "@/store/playerStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { useRouter } from "expo-router";
 import {
+  AlertTriangle,
   Bell,
   Edit3,
   FileText,
@@ -15,7 +17,6 @@ import {
   LogOut,
   Moon,
   Music,
-  RotateCcw,
   Shield,
   Sun,
   Target,
@@ -24,6 +25,7 @@ import {
 import React, { useEffect, useState } from "react";
 import {
   Alert,
+  DevSettings,
   Image,
   Platform,
   ScrollView,
@@ -126,6 +128,37 @@ export default function SettingsScreen() {
             resetOnboarding();
             // Navigate to onboarding immediately
             router.push("/onboarding/welcome");
+          },
+        },
+      ]
+    );
+  };
+
+  const handleResetApp = () => {
+    Alert.alert(
+      "Reset Application",
+      "This will delete all your data, including progress, settings, and favorites. This action cannot be undone. Are you sure you want to proceed?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Reset App",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              // Clear all persisted storage for each store
+              useSettingsStore.persist.clearStorage();
+              usePlayerStore.persist.clearStorage();
+              useConfessionStore.persist.clearStorage();
+
+              // Reload the application to apply changes
+              DevSettings.reload();
+            } catch (error) {
+              console.error("Failed to reset the app:", error);
+              Alert.alert(
+                "Error",
+                "An error occurred while resetting the app. Please try again."
+              );
+            }
           },
         },
       ]
@@ -555,31 +588,27 @@ export default function SettingsScreen() {
         )}
       </View>
 
+      {/* Danger Zone */}
       <View style={[styles.section, { borderBottomColor: theme.border }]}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>
-          Help &amp; Tutorial
+        <Text style={[styles.sectionTitle, { color: theme.error }]}>
+          Danger Zone
         </Text>
-
-        <TouchableOpacity
-          style={styles.settingRow}
-          onPress={handleResetOnboarding}
-          activeOpacity={0.7}
+        <Text
+          style={[
+            styles.settingSubtext,
+            { color: theme.secondary, marginBottom: 12 },
+          ]}
         >
-          <View style={styles.settingLabelContainer}>
-            <RotateCcw
-              size={22}
-              color={theme.text}
-              style={styles.settingIcon}
-            />
-            <View>
-              <Text style={[styles.settingLabel, { color: theme.text }]}>
-                Show Welcome Tutorial
-              </Text>
-              <Text style={[styles.settingSubtext, { color: theme.secondary }]}>
-                Replay the onboarding experience
-              </Text>
-            </View>
-          </View>
+          This will delete all your data, including progress, settings, and
+          favorites. This action cannot be undone.
+        </Text>
+        <TouchableOpacity
+          style={[styles.dangerButton, { backgroundColor: theme.error }]}
+          onPress={handleResetApp}
+          activeOpacity={0.8}
+        >
+          <AlertTriangle size={18} color="#FFFFFF" />
+          <Text style={styles.dangerButtonText}>Reset Application</Text>
         </TouchableOpacity>
       </View>
 
@@ -943,5 +972,19 @@ const styles = StyleSheet.create({
   },
   footer: {
     height: 20,
+  },
+  dangerButton: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dangerButtonText: {
+    color: "#FFFFFF",
+    fontSize: typography.sizes.md,
+    fontWeight: "600",
+    marginLeft: 8,
   },
 });

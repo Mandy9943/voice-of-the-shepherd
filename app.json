@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "mobile-app-2",
-    "slug": "mobile-app-2",
+    "name": "Voice of the Shepherd",
+    "slug": "voice-of-the-shepherd",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",

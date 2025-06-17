@@ -3,13 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { Award, Heart, Users } from "lucide-react-native";
 import React from "react";
-import {
-  Dimensions,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function WelcomeScreen() {
@@ -91,8 +85,6 @@ export default function WelcomeScreen() {
   );
 }
 
-const { width } = Dimensions.get("window");
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -172,7 +164,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   continueButton: {
-    backgroundColor: "rgba(255,255,255,0.2)",
+    backgroundColor: "rgb(134, 217, 255)",
     paddingVertical: 16,
     paddingHorizontal: 48,
     borderRadius: 24,
