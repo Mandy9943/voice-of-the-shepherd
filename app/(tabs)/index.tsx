@@ -1,5 +1,7 @@
 import {
+  Linking,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -16,6 +18,7 @@ import {
 import { getImageAsset } from "@/lib/imageAssets";
 import { Image } from "expo-image";
 
+import { ActionModal } from "@/components/ActionModal";
 import ConfessionTracker from "@/components/ConfessionTracker";
 import { CongratulationsModal } from "@/components/CongratulationsModal";
 import { QuoteCard } from "@/components/QuoteCard";
@@ -32,7 +35,16 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function HomeScreen() {
   const router = useRouter();
   const { isDarkMode, personalInfo, rescueModeSettings } = useSettingsStore();
-  const { addToHistory, playQuote } = usePlayerStore();
+  const {
+    addToHistory,
+    playQuote,
+    showShareModal,
+    dismissShareModal,
+    showReviewModal,
+    dismissReviewModal,
+    showDonateModal,
+    dismissDonateModal,
+  } = usePlayerStore();
   const insets = useSafeAreaInsets();
 
   const theme = isDarkMode ? colors.dark : colors.light;
@@ -79,6 +91,65 @@ export default function HomeScreen() {
       return `Good evening${name ? `, ${name}` : ""}`;
     }
   };
+
+  const handleShareApp = async () => {
+    try {
+      await Share.share({
+        message:
+          "Check out this app, it has been a great source of spiritual strength for me: [App Store Link]",
+      });
+    } catch (error) {
+      console.error("Error sharing app:", error);
+    }
+    dismissShareModal();
+  };
+
+  const handleReviewApp = () => {
+    // Replace with your app's store URL
+    const storeUrl = "market://details?id=com.yourapp.id";
+    Linking.openURL(storeUrl).catch((err) =>
+      console.error("Couldn't open page", err)
+    );
+    dismissReviewModal();
+  };
+
+  const handleDonate = () => {
+    // Replace with your donation link
+    const donationUrl = "https://donate.stripe.com/6oU5kCdF83Qy4MJd6w9oc00";
+    Linking.openURL(donationUrl).catch((err) =>
+      console.error("Couldn't open page", err)
+    );
+    dismissDonateModal();
+  };
+
+  const DonateModalBody = () => (
+    <View>
+      <Text style={[styles.modalText, { color: theme.secondary }]}>
+        If you find it useful, please consider supporting us with a donation.
+        Every bit helps! Your support makes a real difference in bringing
+        God&apos;s word to more people.
+      </Text>
+      <Text style={[styles.roadmapTitle, { color: theme.text }]}>Roadmap:</Text>
+      <View style={styles.roadmapList}>
+        {[
+          "Help us reach more people",
+          "Add more teachings and categories",
+          "Improve audio quality and features",
+          "Add Confession Tracker",
+          "Build Temptation Rescue Mode",
+          "Send Grace to friends/family",
+          "Find a Church near you",
+        ].map((item, index) => (
+          <Text
+            key={index}
+            style={[styles.roadmapItem, { color: theme.secondary }]}
+          >
+            • {item}
+          </Text>
+        ))}
+      </View>
+    </View>
+  );
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -217,6 +288,33 @@ export default function HomeScreen() {
       />
 
       <CongratulationsModal />
+
+      <ActionModal
+        visible={showShareModal}
+        onClose={dismissShareModal}
+        title="Share the Love"
+        body="Each soul you invite brings light to their path — and unlocks more of God's teachings for you. Share the app with someone you care about and be part of their journey to salvation."
+        ctaText="Share the Love"
+        onCtaPress={handleShareApp}
+      />
+
+      <ActionModal
+        visible={showReviewModal}
+        onClose={dismissReviewModal}
+        title="Help Spread the Word"
+        body="Help spread the Word of God and bring more souls to salvation. Please take a moment to review the app — your feedback helps us reach even more hearts."
+        ctaText="Review the App"
+        onCtaPress={handleReviewApp}
+      />
+
+      <ActionModal
+        visible={showDonateModal}
+        onClose={dismissDonateModal}
+        title="Support Our Mission"
+        body={<DonateModalBody />}
+        ctaText="Donate Now"
+        onCtaPress={handleDonate}
+      />
     </View>
   );
 }
@@ -440,5 +538,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginLeft: 12,
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
+    fontSize: typography.sizes.md,
+    lineHeight: typography.sizes.md * 1.5,
+  },
+  roadmapTitle: {
+    fontSize: typography.sizes.md,
+    fontWeight: "bold",
+    marginTop: 10,
+    marginBottom: 5,
+    textAlign: "center",
+  },
+  roadmapList: {
+    alignItems: "flex-start",
+    alignSelf: "stretch",
+    paddingLeft: 20,
+  },
+  roadmapItem: {
+    fontSize: typography.sizes.sm,
+    lineHeight: typography.sizes.sm * 1.5,
+    marginBottom: 5,
   },
 });

@@ -17,16 +17,16 @@ interface StreakProgressProps {
 }
 
 export const StreakProgress: React.FC<StreakProgressProps> = ({ onPress }) => {
-  const { streakData } = usePlayerStore();
+  const { streakData, dailyGoal } = usePlayerStore();
   const { isDarkMode } = useSettingsStore();
 
   const theme = isDarkMode ? colors.dark : colors.light;
-  const dailyGoal = 10;
 
   const progressPercentage = Math.min(
     (streakData.todayProgress.quotesListened / dailyGoal) * 100,
     100
   );
+  console.log("streakData", streakData);
 
   return (
     <View
@@ -74,8 +74,8 @@ export const StreakProgress: React.FC<StreakProgressProps> = ({ onPress }) => {
       </View>
 
       <Text style={[styles.progressSubtitle, { color: theme.secondary }]}>
-        Begin your spiritual journey - listen to 10 teachings for divine
-        forgiveness
+        Begin your spiritual journey - listen to {dailyGoal} teachings for
+        divine forgiveness
       </Text>
 
       <View style={styles.statsRow}>

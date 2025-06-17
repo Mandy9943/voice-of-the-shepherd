@@ -162,6 +162,9 @@ export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
           `AudioProvider: Track finished for Quote ID: ${storeCurrentQuoteId}. Device not playing. Store intended play: ${storeIsPlaying}.`
         );
 
+        // Increment the listened count for the quote that just finished.
+        store.incrementListenedCount(storeCurrentQuoteId);
+
         const currentPlaylist = store.playlist;
         const currentIndex = store.currentIndex;
 

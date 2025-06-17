@@ -1,10 +1,15 @@
 import { getAudioAsset } from "@/lib/audioAssets";
+import { getProcessedCommands } from "@/lib/commandsData";
 import { getPeacefulAmbientMusic } from "@/lib/musicAssets";
 import { Quote, RescueSession, StreakData } from "@/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Router } from "expo-router";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+
+// Milestone triggers - EDIT THESE FOR TESTING
+const SHARE_MODAL_THRESHOLD = 3;
+const REVIEW_MODAL_THRESHOLD = 200;
 
 interface PlayerState {
   currentQuote: Quote | null;
@@ -17,6 +22,17 @@ interface PlayerState {
   dailyGoal: number;
   showCongratulationsModal: boolean;
   isTikTokMode: boolean;
+
+  // Milestone modals
+  showShareModal: boolean;
+  showReviewModal: boolean;
+  showDonateModal: boolean;
+  hasShownShareModal: boolean;
+  hasShownReviewModal: boolean;
+  hasShownDonateModal: boolean;
+
+  // Session state
+  listenedQuotes: string[];
 
   // Audio Player
   audioPlayer: any;
@@ -42,9 +58,14 @@ interface PlayerState {
   toggleFavorite: (quoteId: string) => void;
   addToHistory: (quoteId: string) => void;
   setDailyGoal: (goal: number) => void;
-  incrementListenedCount: () => void;
+  incrementListenedCount: (quoteId: string) => void;
   resetDailyProgressIfNeeded: () => void;
   dismissCongratulationsModal: () => void;
+
+  // Milestone modal actions
+  dismissShareModal: () => void;
+  dismissReviewModal: () => void;
+  dismissDonateModal: () => void;
 
   // Background Music Actions
   startBackgroundMusic: () => void;
@@ -90,6 +111,18 @@ export const usePlayerStore = create<PlayerState>()(
       dailyGoal: 10, // Default to 10 teachings per day
       showCongratulationsModal: false,
       isTikTokMode: false,
+
+      // Milestone modals
+      showShareModal: false,
+      showReviewModal: false,
+      showDonateModal: false,
+      hasShownShareModal: false,
+      hasShownReviewModal: false,
+      hasShownDonateModal: false,
+
+      // Session state
+      listenedQuotes: [],
+
       audioPlayer: null,
       backgroundMusicPlayer: null,
       isBackgroundMusicPlaying: false,
@@ -113,6 +146,7 @@ export const usePlayerStore = create<PlayerState>()(
           playlist: newPlaylist,
           currentIndex: index >= 0 ? index : 0,
           isPlaying: true,
+          listenedQuotes: [], // Reset listened quotes on new playback
         });
 
         if (audioPlayer) {
@@ -228,8 +262,13 @@ export const usePlayerStore = create<PlayerState>()(
         set({ dailyGoal: goal });
       },
 
-      incrementListenedCount: () => {
+      incrementListenedCount: (quoteId) => {
         set((state) => {
+          // Only increment if the quote has not been listened to in this session
+          if (state.listenedQuotes.includes(quoteId)) {
+            return {};
+          }
+
           const today = new Date().toISOString().split("T")[0];
           let streakData = state.streakData;
 
@@ -294,9 +333,42 @@ export const usePlayerStore = create<PlayerState>()(
             completed: goalCompleted,
           };
 
+          // Check for milestone modals
+          const totalQuotesListened = newStreakData.totalQuotesListened;
+          const totalCommands = getProcessedCommands().length;
+
+          let showShareModal = false;
+          let showReviewModal = false;
+          let showDonateModal = false;
+
+          if (
+            totalQuotesListened > SHARE_MODAL_THRESHOLD &&
+            !state.hasShownShareModal
+          ) {
+            showShareModal = true;
+          }
+
+          if (
+            totalQuotesListened > REVIEW_MODAL_THRESHOLD &&
+            !state.hasShownReviewModal
+          ) {
+            showReviewModal = true;
+          }
+
+          if (
+            totalQuotesListened >= totalCommands &&
+            !state.hasShownDonateModal
+          ) {
+            showDonateModal = true;
+          }
+
           return {
             streakData: newStreakData,
             showCongratulationsModal: shouldShowCongratulations,
+            showShareModal,
+            showReviewModal,
+            showDonateModal,
+            listenedQuotes: [...state.listenedQuotes, quoteId],
           };
         });
       },
@@ -322,6 +394,18 @@ export const usePlayerStore = create<PlayerState>()(
 
       dismissCongratulationsModal: () => {
         set({ showCongratulationsModal: false });
+      },
+
+      dismissShareModal: () => {
+        set({ showShareModal: false, hasShownShareModal: true });
+      },
+
+      dismissReviewModal: () => {
+        set({ showReviewModal: false, hasShownReviewModal: true });
+      },
+
+      dismissDonateModal: () => {
+        set({ showDonateModal: false, hasShownDonateModal: true });
       },
 
       startBackgroundMusic: async () => {
@@ -447,6 +531,10 @@ export const usePlayerStore = create<PlayerState>()(
         rescueSessions: state.rescueSessions,
         isTikTokMode: state.isTikTokMode,
         // Exclude non-serializable or session-specific state
+        // Persist milestone modal flags
+        hasShownShareModal: state.hasShownShareModal,
+        hasShownReviewModal: state.hasShownReviewModal,
+        hasShownDonateModal: state.hasShownDonateModal,
       }),
     }
   )
