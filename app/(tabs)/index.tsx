@@ -16,6 +16,7 @@ import {
 import { getImageAsset } from "@/lib/imageAssets";
 import { Image } from "expo-image";
 
+import ConfessionTracker from "@/components/ConfessionTracker";
 import { CongratulationsModal } from "@/components/CongratulationsModal";
 import { QuoteCard } from "@/components/QuoteCard";
 import RescueMode from "@/components/RescueMode";
@@ -173,6 +174,10 @@ export default function HomeScreen() {
         {/* Progress Section */}
         <View style={styles.section}>
           <StreakProgress />
+        </View>
+
+        <View style={styles.section}>
+          <ConfessionTracker />
         </View>
 
         {/* Featured Teachings */}

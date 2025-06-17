@@ -42,12 +42,31 @@ export interface ConfessionEntry {
   nextConfessionReminder?: string; // YYYY-MM-DD format
 }
 
+export interface SpiritualGoal {
+  id: string;
+  sin: string;
+  virtue: string;
+  description: string;
+  progress: number;
+  dateAdded: string;
+  isActive: boolean;
+  completed: boolean;
+  text: string;
+}
+
+export interface CommonSin {
+  id: string;
+  sin: string;
+  virtue: string;
+  description: string;
+  category: string;
+}
+
 export interface ConfessionData {
   lastConfessionDate: string | null;
-  entries: ConfessionEntry[];
-  reminderEnabled: boolean;
-  reminderFrequency: "weekly" | "monthly" | "custom"; // How often to remind
-  customReminderDays?: number; // For custom frequency
+  spiritualGoals: SpiritualGoal[];
+  confessionReminder: boolean;
+  reminderDays: number;
 }
 
 export interface RescueModeSettings {
