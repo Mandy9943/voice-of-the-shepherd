@@ -31,7 +31,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { isDarkMode, personalInfo } = useSettingsStore();
+  const { isDarkMode, personalInfo, rescueModeSettings } = useSettingsStore();
   const { addToHistory, playQuote } = usePlayerStore();
   const insets = useSafeAreaInsets();
 
@@ -93,14 +93,19 @@ export default function HomeScreen() {
             </Text>
           </View>
 
-          <TouchableOpacity
-            style={[styles.sosButton, { backgroundColor: theme.rescue.danger }]}
-            onPress={handleSOSPress}
-            activeOpacity={0.8}
-          >
-            <Shield size={20} color="#FFFFFF" />
-            <Text style={styles.sosButtonText}>SOS</Text>
-          </TouchableOpacity>
+          {rescueModeSettings.enabled && (
+            <TouchableOpacity
+              style={[
+                styles.sosButton,
+                { backgroundColor: theme.rescue.danger },
+              ]}
+              onPress={handleSOSPress}
+              activeOpacity={0.8}
+            >
+              <Shield size={20} color="#FFFFFF" />
+              <Text style={styles.sosButtonText}>SOS</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
