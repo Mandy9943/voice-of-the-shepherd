@@ -54,7 +54,14 @@ export default function QuoteDetailScreen() {
 
   const theme = isDarkMode ? colors.dark : colors.light;
 
-  const quote = quotes.find((q) => q.id === id);
+  const localQuote = quotes.find((q) => q.id === id);
+  const quote = currentQuote ?? localQuote;
+
+  useEffect(() => {
+    if (currentQuote && currentQuote.id !== id) {
+      router.replace(`/quote/${currentQuote.id}`);
+    }
+  }, [currentQuote, id, router]);
 
   useEffect(() => {
     if (quote?.id) {
@@ -106,11 +113,11 @@ export default function QuoteDetailScreen() {
   };
 
   const handleNext = () => {
-    nextQuote(router);
+    nextQuote();
   };
 
   const handlePrevious = () => {
-    previousQuote(router);
+    previousQuote();
   };
 
   const handlePlayAll = () => {

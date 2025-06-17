@@ -34,8 +34,8 @@ interface PlayerState {
   playQuote: (quote: Quote, playlist?: Quote[], router?: Router) => void;
   pauseQuote: () => void;
   resumeQuote: () => void;
-  nextQuote: (router?: Router) => void;
-  previousQuote: (router?: Router) => void;
+  nextQuote: () => void;
+  previousQuote: () => void;
   swipeToNext: () => Quote | null;
   swipeToPrevious: () => Quote | null;
   setTikTokMode: (enabled: boolean) => void;
@@ -143,7 +143,7 @@ export const usePlayerStore = create<PlayerState>()(
         }
       },
 
-      nextQuote: async (router) => {
+      nextQuote: async () => {
         const { playlist, currentIndex, audioPlayer } = get();
         if (playlist.length > 0) {
           const nextIndex = (currentIndex + 1) % playlist.length;
@@ -160,13 +160,10 @@ export const usePlayerStore = create<PlayerState>()(
               await audioPlayer.play();
             }
           }
-          if (router) {
-            router.replace(`/quote/${nextQuote.id}`);
-          }
         }
       },
 
-      previousQuote: async (router) => {
+      previousQuote: async () => {
         const { playlist, currentIndex, audioPlayer } = get();
         if (playlist.length > 0) {
           const prevIndex =
@@ -183,9 +180,6 @@ export const usePlayerStore = create<PlayerState>()(
               await audioPlayer.replace(audioAsset);
               await audioPlayer.play();
             }
-          }
-          if (router) {
-            router.replace(`/quote/${prevQuote.id}`);
           }
         }
       },

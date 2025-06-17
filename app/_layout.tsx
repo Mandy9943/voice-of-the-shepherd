@@ -5,6 +5,7 @@ import { useSettingsStore } from "@/store/settingsStore";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
+import { AppState } from "react-native";
 import "react-native-gesture-handler";
 
 export default function RootLayout() {
@@ -22,7 +23,17 @@ function RootLayoutNav() {
 
   useEffect(() => {
     resetDailyProgressIfNeeded();
-  }, []);
+
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
+      if (nextAppState === "active") {
+        resetDailyProgressIfNeeded();
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [resetDailyProgressIfNeeded]);
 
   return (
     <>
