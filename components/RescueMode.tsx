@@ -8,12 +8,13 @@ import { LinearGradient } from "expo-linear-gradient";
 import {
   Heart,
   MessageCircle,
+  Pause,
   Phone,
   Play,
   Shield,
   X,
 } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Linking,
   Modal,
@@ -46,10 +47,17 @@ const rescueQuotes = [
 
 export default function RescueMode({ visible, onClose }: RescueModeProps) {
   const { isDarkMode, rescueModeSettings } = useSettingsStore();
-  const { playQuote } = usePlayerStore();
+  const {
+    playQuote,
+    pauseQuote,
+    resumeQuote,
+    isPlaying,
+    currentQuote: playerCurrentQuote,
+  } = usePlayerStore();
   const theme = isDarkMode ? colors.dark : colors.light;
 
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
+  const isInitialQuote = useRef(true);
 
   // Get all quotes and filter them based on rescue categories
   const allQuotes = getProcessedCommands();
@@ -62,18 +70,23 @@ export default function RescueMode({ visible, onClose }: RescueModeProps) {
   const currentQuote =
     quotesToUse.length > 0 ? quotesToUse[currentQuoteIndex] : null;
 
+  const isThisQuotePlaying =
+    isPlaying && playerCurrentQuote?.id === currentQuote?.id;
+
   useEffect(() => {
     // Reset to the first quote when the modal is opened
     setCurrentQuoteIndex(0);
-
-    if (visible && rescueModeSettings.autoPlayAudio && currentQuote) {
-      playQuote(currentQuote, quotesToUse);
-    }
-  }, [visible, rescueModeSettings.autoPlayAudio]);
+    isInitialQuote.current = true;
+  }, [visible]);
 
   useEffect(() => {
-    // Autoplay when the quote changes
-    if (visible && rescueModeSettings.autoPlayAudio && currentQuote) {
+    // Autoplay when the quote changes (e.g., on "Next Quote"), but not on initial open.
+    if (isInitialQuote.current) {
+      isInitialQuote.current = false;
+      return;
+    }
+
+    if (visible && currentQuote) {
       playQuote(currentQuote, quotesToUse);
     }
   }, [currentQuote]);
@@ -87,7 +100,16 @@ export default function RescueMode({ visible, onClose }: RescueModeProps) {
 
   const handlePlayAudio = () => {
     if (currentQuote) {
-      playQuote(currentQuote, quotesToUse);
+      if (isThisQuotePlaying) {
+        pauseQuote();
+      } else {
+        const isThisQuoteLoaded = playerCurrentQuote?.id === currentQuote.id;
+        if (!isPlaying && isThisQuoteLoaded) {
+          resumeQuote();
+        } else {
+          playQuote(currentQuote, quotesToUse);
+        }
+      }
     }
   };
 
@@ -163,8 +185,17 @@ export default function RescueMode({ visible, onClose }: RescueModeProps) {
                   onPress={handlePlayAudio}
                   activeOpacity={0.8}
                 >
-                  <Play size={16} color="#FFFFFF" />
-                  <Text style={styles.actionButtonText}>Listen</Text>
+                  {isThisQuotePlaying ? (
+                    <>
+                      <Pause size={16} color="#FFFFFF" />
+                      <Text style={styles.actionButtonText}>Pause</Text>
+                    </>
+                  ) : (
+                    <>
+                      <Play size={16} color="#FFFFFF" />
+                      <Text style={styles.actionButtonText}>Listen</Text>
+                    </>
+                  )}
                 </TouchableOpacity>
 
                 {quotesToUse.length > 1 && (
