@@ -2,14 +2,14 @@ import { typography } from "@/constants/typography";
 import { useSettingsStore } from "@/store/settingsStore";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { ArrowRight, CheckCircle, Heart } from "lucide-react-native";
+import { ArrowRight, CheckCircle, Heart, Sparkles } from "lucide-react-native";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function CompleteScreen() {
   const router = useRouter();
-  const { isDarkMode, completeOnboarding, personalInfo } = useSettingsStore();
+  const { completeOnboarding, personalInfo } = useSettingsStore();
   const insets = useSafeAreaInsets();
 
   const handleComplete = () => {
@@ -28,7 +28,7 @@ export default function CompleteScreen() {
       <View style={styles.content}>
         <View style={styles.header}>
           <View style={styles.iconContainer}>
-            <CheckCircle size={64} color="#FFFFFF" fill="#FFFFFF" />
+            <Sparkles size={64} color="#FFFFFF" fill="#FFFFFF" />
           </View>
 
           <Text style={styles.title}>

@@ -1,16 +1,16 @@
 {
   "expo": {
-    "name": "Voice of the Shepherd",
-    "slug": "mobile-app-2",
+    "name": "My Shepherd",
+    "slug": "my-shepherd",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mobileapp2",
+    "scheme": "my-shepherd",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.cesar9943.mobileapp2",
+      "bundleIdentifier": "com.cesar9943.my-shepherd",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "UIBackgroundModes": ["audio"],
@@ -50,10 +50,7 @@
       "typedRoutes": true
     },
     "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "a0027a54-97bb-43de-83f3-faacfd1a976b"
-      }
+      "router": {}
     }
   }
 }
