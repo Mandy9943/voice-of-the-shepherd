@@ -94,15 +94,18 @@ export default function SettingsScreen() {
         {
           text: "Reset App",
           style: "destructive",
-          onPress: async () => {
+          onPress: () => {
             try {
               // Clear all persisted storage for each store
               useSettingsStore.persist.clearStorage();
               usePlayerStore.persist.clearStorage();
               useConfessionStore.persist.clearStorage();
 
-              // Reload the application to apply changes
-              DevSettings.reload();
+              // Give storage clearing a moment before reloading
+              setTimeout(() => {
+                // Reload the application to apply changes
+                DevSettings.reload();
+              }, 500);
             } catch (error) {
               console.error("Failed to reset the app:", error);
               Alert.alert(
