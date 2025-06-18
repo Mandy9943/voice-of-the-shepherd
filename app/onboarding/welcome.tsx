@@ -33,7 +33,7 @@ export default function WelcomeScreen() {
           </View>
         </View>
 
-        <Text style={styles.title}>Voice of the Shepherd</Text>
+        <Text style={styles.title}>My Shepherd</Text>
         <Text style={styles.subtitle}>Your spiritual journey starts here</Text>
 
         <View style={styles.statsContainer}>

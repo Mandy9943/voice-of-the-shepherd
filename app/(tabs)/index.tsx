@@ -26,6 +26,8 @@ import { MiniPlayer } from "@/components/MiniPlayer";
 import { QuoteCard } from "@/components/QuoteCard";
 import RescueMode from "@/components/RescueMode";
 import { StreakProgress } from "@/components/StreakProgress";
+import { appStoreUrl, donationUrl, playStoreUrl } from "@/constants/links";
+import { roadmapItems } from "@/lib/appData";
 import { usePlayerStore } from "@/store/playerStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { LinearGradient } from "expo-linear-gradient";
@@ -97,12 +99,17 @@ export default function HomeScreen() {
 
   const handleShareApp = async () => {
     try {
+      const appUrl = Platform.OS === "ios" ? appStoreUrl : playStoreUrl;
+
+      const message = `Check out this app, it has been a great source of spiritual strength for me: ${appUrl}`;
+
       await Share.share({
-        message:
-          "Check out this app, it has been a great source of spiritual strength for me: [App Store Link]",
+        message,
+        url: appUrl, // iOS
+        title: "Check out My Shepherd App", // Android
       });
     } catch (error) {
-      console.error("Error sharing app:", error);
+      Alert.alert("Error", "Could not share the app at this time.");
     }
     dismissShareModal();
   };
@@ -139,7 +146,6 @@ export default function HomeScreen() {
 
   const handleDonate = () => {
     // Replace with your donation link
-    const donationUrl = "https://donate.stripe.com/6oU5kCdF83Qy4MJd6w9oc00";
     Linking.openURL(donationUrl).catch((err) =>
       console.error("Couldn't open page", err)
     );
@@ -155,15 +161,7 @@ export default function HomeScreen() {
       </Text>
       <Text style={[styles.roadmapTitle, { color: theme.text }]}>Roadmap:</Text>
       <View style={styles.roadmapList}>
-        {[
-          "Help us reach more people",
-          "Add more teachings and categories",
-          "Improve audio quality and features",
-          "Add Confession Tracker",
-          "Build Temptation Rescue Mode",
-          "Send Grace to friends/family",
-          "Find a Church near you",
-        ].map((item, index) => (
+        {roadmapItems.map((item, index) => (
           <Text
             key={index}
             style={[styles.roadmapItem, { color: theme.secondary }]}

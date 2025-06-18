@@ -13,7 +13,9 @@
       "bundleIdentifier": "com.cesar9943.my-shepherd",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "UIBackgroundModes": ["audio"],
+        "UIBackgroundModes": [
+          "audio"
+        ],
         "NSMicrophoneUsageDescription": "This app does not use the microphone. This permission is required by expo-audio for audio playback functionality."
       }
     },
@@ -50,7 +52,10 @@
       "typedRoutes": true
     },
     "extra": {
-      "router": {}
+      "router": {},
+      "eas": {
+        "projectId": "8d8a48e2-f3e9-4aa0-87d1-ed069a00d5d4"
+      }
     }
   }
 }

@@ -8,7 +8,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 // Milestone triggers - EDIT THESE FOR TESTING
-const SHARE_MODAL_THRESHOLD = 150;
+const SHARE_MODAL_THRESHOLD = 3;
 const REVIEW_MODAL_THRESHOLD = 200;
 
 interface PlayerState {

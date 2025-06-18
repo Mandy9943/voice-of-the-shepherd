@@ -1,5 +1,6 @@
 import { AudioWaveform } from "@/components/AudioWaveform";
 import { colors } from "@/constants/colors";
+import { appStoreUrl, playStoreUrl } from "@/constants/links";
 import { typography } from "@/constants/typography";
 import { getProcessedCommands } from "@/lib/commandsData";
 import { getImageAsset } from "@/lib/imageAssets";
@@ -21,9 +22,11 @@ import {
 } from "lucide-react-native";
 import React, { useEffect } from "react";
 import {
+  Alert,
   Dimensions,
   Platform,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -101,10 +104,30 @@ export default function QuoteDetailScreen() {
     toggleFavorite(quote.id);
   };
 
-  const handleShare = () => {
-    // Share functionality would go here
+  const handleShare = async () => {
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+
+    if (!quote) return;
+
+    try {
+      const appUrl = Platform.OS === "ios" ? appStoreUrl : playStoreUrl;
+
+      const message = `Listen to this teaching from Jesus:\n\n"${quote.text}" — ${quote.reference}\n\nShared from the "My Shepherd" app. You can download it here: ${appUrl}`;
+
+      await Share.share(
+        {
+          message,
+          url: appUrl, // iOS
+          title: `A teaching from ${quote.attribution}`, // Android
+        },
+        {
+          dialogTitle: "Share this teaching", // Android
+        }
+      );
+    } catch (error) {
+      Alert.alert("Error", "Could not share the teaching at this time.");
     }
   };
 

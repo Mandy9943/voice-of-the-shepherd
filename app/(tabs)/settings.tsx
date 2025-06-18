@@ -1,7 +1,9 @@
 import CommitmentModal from "@/components/CommitmentModal";
 import { NotificationTimeManager } from "@/components/NotificationTimeManager";
 import { colors } from "@/constants/colors";
+import { donationUrl } from "@/constants/links";
 import { typography } from "@/constants/typography";
+import { roadmapItems } from "@/lib/appData";
 import { NotificationService } from "@/services/notificationService";
 import { useConfessionStore } from "@/store/confessionStore";
 import { usePlayerStore } from "@/store/playerStore";
@@ -34,6 +36,9 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const appVersion = "1.0.0";
+const appName = "My Shepherd";
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -182,17 +187,19 @@ export default function SettingsScreen() {
   };
 
   const handleDonation = () => {
-    router.push("https://donate.stripe.com/6oU5kCdF83Qy4MJd6w9oc00");
+    Linking.openURL(donationUrl).catch((err) =>
+      console.error("Couldn't open page", err)
+    );
   };
 
   const handleSendFeedback = () => {
     // NOTE: Please replace this with your actual support email address
     const to = "bucur.andrei.teodor@gmail.com";
-    const subject = "App Feedback (Voice of the Shepherd v1.0.0)";
+    const subject = `App Feedback (${appName} v${appVersion})`;
     const body = `
 
 ---
-App Version: 1.0.0
+App Version: ${appVersion}
 Device OS: ${Platform.OS}
 
 `;
@@ -572,27 +579,11 @@ Device OS: ${Platform.OS}
               <Text style={styles.roadmapTitle}>Roadmap:</Text>
 
               <View style={styles.supportFeatures}>
-                <Text style={styles.supportFeature}>
-                  Help us reach more people
-                </Text>
-                <Text style={styles.supportFeature}>
-                  Add more teachings and categories
-                </Text>
-                <Text style={styles.supportFeature}>
-                  Improve audio quality and features
-                </Text>
-                <Text style={styles.supportFeature}>
-                  Add Confession Tracker
-                </Text>
-                <Text style={styles.supportFeature}>
-                  Build Temptation Rescue Mode
-                </Text>
-                <Text style={styles.supportFeature}>
-                  Send Grace to friends/family
-                </Text>
-                <Text style={styles.supportFeature}>
-                  Find a Shepherd near you
-                </Text>
+                {roadmapItems.map((item, index) => (
+                  <Text key={index} style={styles.supportFeature}>
+                    {item}
+                  </Text>
+                ))}
               </View>
 
               <TouchableOpacity
