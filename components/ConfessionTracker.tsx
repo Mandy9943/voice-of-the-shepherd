@@ -169,9 +169,11 @@ const ConfessionTracker: React.FC = () => {
             ]}
           >
             <CalendarIcon size={16} color={theme.primary} />
-            <Text style={[styles.daysText, { color: theme.text }]}>
-              {daysSinceConfession ?? "—"}
-            </Text>
+            {daysSinceConfession && (
+              <Text style={[styles.daysText, { color: theme.text }]}>
+                {daysSinceConfession}
+              </Text>
+            )}
           </View>
         </View>
 
