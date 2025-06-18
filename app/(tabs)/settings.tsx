@@ -13,6 +13,7 @@ import {
   FileText,
   Heart,
   LogOut,
+  Mail,
   Moon,
   Music,
   Shield,
@@ -23,6 +24,7 @@ import React, { useState } from "react";
 import {
   Alert,
   DevSettings,
+  Linking,
   Platform,
   ScrollView,
   StyleSheet,
@@ -181,6 +183,30 @@ export default function SettingsScreen() {
 
   const handleDonation = () => {
     router.push("https://donate.stripe.com/6oU5kCdF83Qy4MJd6w9oc00");
+  };
+
+  const handleSendFeedback = () => {
+    // NOTE: Please replace this with your actual support email address
+    const to = "bucur.andrei.teodor@gmail.com";
+    const subject = "App Feedback (Voice of the Shepherd v1.0.0)";
+    const body = `
+
+---
+App Version: 1.0.0
+Device OS: ${Platform.OS}
+
+`;
+
+    const url = `mailto:${to}?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
+
+    Linking.openURL(url).catch(() => {
+      Alert.alert(
+        "Error",
+        `Could not open email client. Please send feedback to ${to}`
+      );
+    });
   };
 
   const enabledNotificationTimes = notificationTimes.filter((t) => t.enabled);
@@ -471,6 +497,29 @@ export default function SettingsScreen() {
         {Platform.OS !== "web" && dailyNotifications && (
           <NotificationTimeManager isDarkMode={isDarkMode} />
         )}
+      </View>
+
+      <View style={[styles.section, { borderBottomColor: theme.border }]}>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>
+          Feedback & Support
+        </Text>
+        <TouchableOpacity
+          style={styles.settingRow}
+          onPress={handleSendFeedback}
+          activeOpacity={0.7}
+        >
+          <View style={styles.settingLabelContainer}>
+            <Mail size={22} color={theme.text} style={styles.settingIcon} />
+            <View>
+              <Text style={[styles.settingLabel, { color: theme.text }]}>
+                Send Feedback
+              </Text>
+              <Text style={[styles.settingSubtext, { color: theme.secondary }]}>
+                Have a suggestion or an issue? Let us know!
+              </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
       </View>
 
       {/* Danger Zone */}
