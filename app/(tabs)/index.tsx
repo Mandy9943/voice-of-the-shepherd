@@ -1,5 +1,7 @@
 import {
+  Alert,
   Linking,
+  Platform,
   ScrollView,
   Share,
   StyleSheet,
@@ -28,8 +30,9 @@ import { usePlayerStore } from "@/store/playerStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
+import * as StoreReview from "expo-store-review";
 import { Play, Shield, Shuffle } from "lucide-react-native";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
@@ -104,13 +107,34 @@ export default function HomeScreen() {
     dismissShareModal();
   };
 
-  const handleReviewApp = () => {
-    // Replace with your app's store URL
-    const storeUrl = "market://details?id=com.yourapp.id";
-    Linking.openURL(storeUrl).catch((err) =>
-      console.error("Couldn't open page", err)
-    );
+  const handleReviewApp = async () => {
     dismissReviewModal();
+
+    if (Platform.OS === "web") {
+      Alert.alert("Not available on web.");
+      return;
+    }
+
+    try {
+      if (await StoreReview.hasAction()) {
+        await StoreReview.requestReview();
+      } else {
+        const iosBundleIdentifier = "com.cesar9943.my-shepherd";
+        const androidPackageName = "com.cesar9943.my-shepherd"; // Assuming same as iOS, or replace with actual
+
+        const storeUrl =
+          Platform.OS === "ios"
+            ? `https://apps.apple.com/app/id${iosBundleIdentifier}` // This will need the app store ID after publishing
+            : `market://details?id=${androidPackageName}`;
+
+        Linking.openURL(storeUrl).catch(() => {
+          Alert.alert("Error", "Could not open app store.");
+        });
+      }
+    } catch (error) {
+      console.error("Error requesting review:", error);
+      Alert.alert("Error", "Could not request review.");
+    }
   };
 
   const handleDonate = () => {
@@ -150,6 +174,10 @@ export default function HomeScreen() {
       </View>
     </View>
   );
+
+  const quotesForCarousel = useMemo(() => {
+    return quotes.slice(0, 10);
+  }, [quotes]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
