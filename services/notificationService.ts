@@ -20,6 +20,15 @@ export class NotificationService {
       return false;
     }
 
+    if (Platform.OS === "android") {
+      await Notifications.setNotificationChannelAsync("default", {
+        name: "Daily Reminders",
+        importance: Notifications.AndroidImportance.DEFAULT,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: "#FF231F7C",
+      });
+    }
+
     try {
       const { status: existingStatus } =
         await Notifications.getPermissionsAsync();
@@ -72,7 +81,7 @@ export class NotificationService {
               channelId: "default",
               hour: time.hour,
               minute: time.minute,
-              repeats: true,
+              type: Notifications.SchedulableTriggerInputTypes.DAILY,
             },
           });
 

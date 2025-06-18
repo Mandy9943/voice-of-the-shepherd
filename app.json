@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Voice of the Shepherd",
-    "slug": "voice-of-the-shepherd",
+    "slug": "mobile-app-2",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -23,7 +23,11 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "permissions": ["WAKE_LOCK"]
+      "permissions": [
+        "WAKE_LOCK",
+        "SCHEDULE_EXACT_ALARM",
+        "RECEIVE_BOOT_COMPLETED"
+      ]
     },
     "web": {
       "bundler": "metro",
