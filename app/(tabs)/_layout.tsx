@@ -7,15 +7,9 @@ import React, { useState } from "react";
 import { StyleSheet } from "react-native";
 
 export default function TabLayout() {
-  const { isDarkMode, rescueModeSettings } = useSettingsStore();
+  const { isDarkMode } = useSettingsStore();
   const [showRescueMode, setShowRescueMode] = useState(false);
   const theme = isDarkMode ? colors.dark : colors.light;
-
-  const handleSOSPress = () => {
-    if (rescueModeSettings.enabled) {
-      setShowRescueMode(true);
-    }
-  };
 
   return (
     <>

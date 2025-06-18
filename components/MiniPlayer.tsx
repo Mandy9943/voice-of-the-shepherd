@@ -8,7 +8,6 @@ import { useRouter } from "expo-router";
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react-native";
 import React from "react";
 import {
-  Dimensions,
   Platform,
   StyleSheet,
   Text,
@@ -63,7 +62,7 @@ export const MiniPlayer: React.FC = () => {
   const showPlaylistControls = playlist.length > 1;
 
   return (
-    <View style={[styles.container, { bottom: tabBarHeight + 8 }]}>
+    <View style={[styles.container, { bottom: 10 }]}>
       <TouchableOpacity
         style={[
           styles.playerContainer,
@@ -117,8 +116,6 @@ export const MiniPlayer: React.FC = () => {
     </View>
   );
 };
-
-const { width } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   container: {
