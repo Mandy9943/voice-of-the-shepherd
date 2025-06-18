@@ -8,7 +8,6 @@ import { usePlayerStore } from "@/store/playerStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { useRouter } from "expo-router";
 import {
-  AlertTriangle,
   Bell,
   Edit3,
   FileText,
@@ -475,7 +474,7 @@ export default function SettingsScreen() {
       </View>
 
       {/* Danger Zone */}
-      <View style={[styles.section, { borderBottomColor: theme.border }]}>
+      {/* <View style={[styles.section, { borderBottomColor: theme.border }]}>
         <Text style={[styles.sectionTitle, { color: theme.error }]}>
           Danger Zone
         </Text>
@@ -496,7 +495,7 @@ export default function SettingsScreen() {
           <AlertTriangle size={18} color="#FFFFFF" />
           <Text style={styles.dangerButtonText}>Reset Application</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
 
       <View style={styles.section}>
         <View

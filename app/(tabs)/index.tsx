@@ -19,7 +19,6 @@ import { getImageAsset } from "@/lib/imageAssets";
 import { Image } from "expo-image";
 
 import { ActionModal } from "@/components/ActionModal";
-import ConfessionTracker from "@/components/ConfessionTracker";
 import { CongratulationsModal } from "@/components/CongratulationsModal";
 import { MiniPlayer } from "@/components/MiniPlayer";
 import { QuoteCard } from "@/components/QuoteCard";
@@ -254,9 +253,9 @@ export default function HomeScreen() {
           <StreakProgress />
         </View>
 
-        <View style={styles.section}>
+        {/* <View style={styles.section}>
           <ConfessionTracker />
-        </View>
+        </View> */}
 
         {/* Featured Teachings */}
         <View style={styles.section}>
