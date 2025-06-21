@@ -26,15 +26,14 @@ import { MiniPlayer } from "@/components/MiniPlayer";
 import { QuoteCard } from "@/components/QuoteCard";
 import RescueMode from "@/components/RescueMode";
 import { StreakProgress } from "@/components/StreakProgress";
-import { appStoreUrl, donationUrl, playStoreUrl } from "@/constants/links";
-import { roadmapItems } from "@/lib/appData";
+import { appStoreUrl, playStoreUrl } from "@/constants/links";
 import { usePlayerStore } from "@/store/playerStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import * as StoreReview from "expo-store-review";
 import { Play, Shield, Shuffle } from "lucide-react-native";
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
@@ -47,8 +46,6 @@ export default function HomeScreen() {
     dismissShareModal,
     showReviewModal,
     dismissReviewModal,
-    showDonateModal,
-    dismissDonateModal,
   } = usePlayerStore();
   const insets = useSafeAreaInsets();
 
@@ -108,7 +105,7 @@ export default function HomeScreen() {
         url: appUrl, // iOS
         title: "Check out My Shepherd App", // Android
       });
-    } catch (error) {
+    } catch {
       Alert.alert("Error", "Could not share the app at this time.");
     }
     dismissShareModal();
@@ -143,39 +140,6 @@ export default function HomeScreen() {
       Alert.alert("Error", "Could not request review.");
     }
   };
-
-  const handleDonate = () => {
-    // Replace with your donation link
-    Linking.openURL(donationUrl).catch((err) =>
-      console.error("Couldn't open page", err)
-    );
-    dismissDonateModal();
-  };
-
-  const DonateModalBody = () => (
-    <View>
-      <Text style={[styles.modalText, { color: theme.secondary }]}>
-        If you find it useful, please consider supporting us with a donation.
-        Every bit helps! Your support makes a real difference in bringing
-        God&apos;s word to more people.
-      </Text>
-      <Text style={[styles.roadmapTitle, { color: theme.text }]}>Roadmap:</Text>
-      <View style={styles.roadmapList}>
-        {roadmapItems.map((item, index) => (
-          <Text
-            key={index}
-            style={[styles.roadmapItem, { color: theme.secondary }]}
-          >
-            • {item}
-          </Text>
-        ))}
-      </View>
-    </View>
-  );
-
-  const quotesForCarousel = useMemo(() => {
-    return quotes.slice(0, 10);
-  }, [quotes]);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -334,14 +298,6 @@ export default function HomeScreen() {
         onCtaPress={handleReviewApp}
       />
 
-      <ActionModal
-        visible={showDonateModal}
-        onClose={dismissDonateModal}
-        title="Support Our Mission"
-        body={<DonateModalBody />}
-        ctaText="Donate Now"
-        onCtaPress={handleDonate}
-      />
       <MiniPlayer />
     </View>
   );

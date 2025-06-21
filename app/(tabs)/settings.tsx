@@ -1,14 +1,11 @@
 import CommitmentModal from "@/components/CommitmentModal";
 import { NotificationTimeManager } from "@/components/NotificationTimeManager";
 import { colors } from "@/constants/colors";
-import { donationUrl } from "@/constants/links";
 import { typography } from "@/constants/typography";
 import { roadmapItems } from "@/lib/appData";
 import { NotificationService } from "@/services/notificationService";
-import { useConfessionStore } from "@/store/confessionStore";
 import { usePlayerStore } from "@/store/playerStore";
 import { useSettingsStore } from "@/store/settingsStore";
-import { useRouter } from "expo-router";
 import {
   Bell,
   Edit3,
@@ -25,7 +22,6 @@ import {
 import React, { useState } from "react";
 import {
   Alert,
-  DevSettings,
   Linking,
   Platform,
   ScrollView,
@@ -41,7 +37,6 @@ const appVersion = "1.0.0";
 const appName = "My Shepherd";
 
 export default function SettingsScreen() {
-  const router = useRouter();
   const {
     isDarkMode,
     enableBackgroundMusic,
@@ -91,39 +86,39 @@ export default function SettingsScreen() {
     await toggleDailyNotifications();
   };
 
-  const handleResetApp = () => {
-    Alert.alert(
-      "Reset Application",
-      "This will delete all your data, including progress, settings, and favorites. This action cannot be undone. Are you sure you want to proceed?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Reset App",
-          style: "destructive",
-          onPress: () => {
-            try {
-              // Clear all persisted storage for each store
-              useSettingsStore.persist.clearStorage();
-              usePlayerStore.persist.clearStorage();
-              useConfessionStore.persist.clearStorage();
+  // const handleResetApp = () => {
+  //   Alert.alert(
+  //     "Reset Application",
+  //     "This will delete all your data, including progress, settings, and favorites. This action cannot be undone. Are you sure you want to proceed?",
+  //     [
+  //       { text: "Cancel", style: "cancel" },
+  //       {
+  //         text: "Reset App",
+  //         style: "destructive",
+  //         onPress: () => {
+  //           try {
+  //             // Clear all persisted storage for each store
+  //             useSettingsStore.persist.clearStorage();
+  //             usePlayerStore.persist.clearStorage();
+  //             useConfessionStore.persist.clearStorage();
 
-              // Give storage clearing a moment before reloading
-              setTimeout(() => {
-                // Reload the application to apply changes
-                DevSettings.reload();
-              }, 500);
-            } catch (error) {
-              console.error("Failed to reset the app:", error);
-              Alert.alert(
-                "Error",
-                "An error occurred while resetting the app. Please try again."
-              );
-            }
-          },
-        },
-      ]
-    );
-  };
+  //             // Give storage clearing a moment before reloading
+  //             setTimeout(() => {
+  //               // Reload the application to apply changes
+  //               DevSettings.reload();
+  //             }, 500);
+  //           } catch (error) {
+  //             console.error("Failed to reset the app:", error);
+  //             Alert.alert(
+  //               "Error",
+  //               "An error occurred while resetting the app. Please try again."
+  //             );
+  //           }
+  //         },
+  //       },
+  //     ]
+  //   );
+  // };
 
   const handleDailyGoalChange = () => {
     Alert.alert("Change Daily Goal", "Select your new daily teaching goal:", [
@@ -184,12 +179,6 @@ export default function SettingsScreen() {
         onPress: () => setShowCommitmentModal(true),
       },
     ]);
-  };
-
-  const handleDonation = () => {
-    Linking.openURL(donationUrl).catch((err) =>
-      console.error("Couldn't open page", err)
-    );
   };
 
   const handleSendFeedback = () => {
@@ -585,14 +574,6 @@ Device OS: ${Platform.OS}
                   </Text>
                 ))}
               </View>
-
-              <TouchableOpacity
-                style={styles.donateButton}
-                activeOpacity={0.8}
-                onPress={handleDonation}
-              >
-                <Text style={styles.donateButtonText}>Donate</Text>
-              </TouchableOpacity>
 
               <Text style={styles.stripeText}>Secure payment by Stripe</Text>
             </View>

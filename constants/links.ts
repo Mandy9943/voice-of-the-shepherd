@@ -1,5 +1,3 @@
-export const donationUrl = "https://donate.stripe.com/6oU5kCdF83Qy4MJd6w9oc00";
-
 // TODO: Replace with your actual Apple App ID once the app is published
 const appleAppId = "6747423959";
 
