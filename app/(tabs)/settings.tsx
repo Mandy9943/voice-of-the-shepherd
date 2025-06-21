@@ -559,12 +559,6 @@ Device OS: ${Platform.OS}
             </View>
 
             <View style={styles.supportTextContainer}>
-              <Text style={styles.supportDescription}>
-                If you find this app useful, please consider supporting us with
-                a donation. Every bit helps! Your support makes a real
-                difference in bringing God&apos;s word to more people.
-              </Text>
-
               <Text style={styles.roadmapTitle}>Roadmap:</Text>
 
               <View style={styles.supportFeatures}>
