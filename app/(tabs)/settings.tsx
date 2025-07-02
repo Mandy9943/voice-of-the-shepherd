@@ -568,8 +568,6 @@ Device OS: ${Platform.OS}
                   </Text>
                 ))}
               </View>
-
-              <Text style={styles.stripeText}>Secure payment by Stripe</Text>
             </View>
           </View>
         </View>
